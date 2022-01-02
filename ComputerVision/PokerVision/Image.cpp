@@ -44,6 +44,18 @@ float Image::getAngleBetween(const cv::Point2f a, const cv::Point2f b, const cv:
 	return (int)floor(alpha * 180.f / 3.141592654 + 0.5);
 }
 
+void Image::showImage(bool showPoints)
+{
+	cv::Mat showImage = mat.clone();
+	if (showPoints) {
+		for (int i = 0; i < keypoints.size(); ++i) {
+			cv::KeyPoint k = keypoints[i];
+			cv::circle(showImage, k.pt, 1, cv::Scalar(0, 255, 0), 1);
+		}
+	}
+	cv::imshow(name, showImage);
+}
+
 
 void Image::detectAndCompute(const cv::Ptr<cv::ORB>& orb)
 {
@@ -53,13 +65,15 @@ void Image::detectAndCompute(const cv::Ptr<cv::ORB>& orb)
 
 void Image::knnMatch(const cv::Ptr<cv::BFMatcher>& bfm, const Image& img, const float distance = 0.75f)
 {
+	//matches = std::vector<std::vector<cv::DMatch>>();
 	matches.clear();
 	matchesGood.clear();
 	bfm->knnMatch(descriptor, img.descriptor, matches, 2);
-
-	for (auto elem : matches) {
-		if (elem[0].distance < distance * elem[1].distance) {
-			matchesGood.push_back(elem[0]);
+	if (matches.size() > 0) {
+		for (auto elem : matches) {
+			if (elem[0].distance < distance * elem[1].distance) {
+				matchesGood.push_back(elem[0]);
+			}
 		}
 	}
 }

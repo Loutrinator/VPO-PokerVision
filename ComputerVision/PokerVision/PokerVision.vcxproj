@@ -150,15 +150,21 @@
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="CardValue.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="Main.cpp" />
     <ClCompile Include="PokerVision.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes.jpg" />
+    <Image Include="resources\test-1.png" />
+    <Image Include="resources\test-2.png" />
+    <Image Include="resources\test-3.png" />
+    <Image Include="resources\test-4.png" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardValue.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="PokerVision.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

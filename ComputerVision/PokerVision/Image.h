@@ -1,5 +1,6 @@
 #pragma once
 #include <opencv2/opencv.hpp>
+#include <string>
 class Image
 {
 private:
@@ -18,6 +19,7 @@ public:
 	cv::Scalar color;
 	std::vector<std::vector<cv::DMatch>> matches;
 	std::vector<cv::DMatch> matchesGood;
+	std::string name = "";
 
 	void detectAndCompute(const cv::Ptr<cv::ORB>& orb);
 
@@ -33,5 +35,7 @@ public:
 		std::vector<Image>& leftImgs,
 		const cv::Ptr<cv::ORB>& orb);
 	static float getAngleBetween(const cv::Point2f a, const cv::Point2f b, const cv::Point2f c);
+
+	void showImage(bool showPoints);
 
 };

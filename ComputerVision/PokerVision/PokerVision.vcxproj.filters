@@ -11,9 +11,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="PokerVision.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Image.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -23,9 +20,27 @@
     <ClCompile Include="CardValue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PokerVision.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\test-1.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\test-2.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\test-3.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\test-4.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
@@ -37,6 +52,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="CardValue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PokerVision.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

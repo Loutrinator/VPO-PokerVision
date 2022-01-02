@@ -31,4 +31,5 @@ public:
 	CardRank rank;//la couleur
 	CardValue(CardRank r, CardSuit s);
 	std::string ToString();
+	std::string ToShortString();
 };
