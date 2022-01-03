@@ -2,7 +2,7 @@
 
 PokerVision::PokerVision()
 {
-	cardOrb = cv::ORB::create(2000, 1.2, 8, 1, 2);
+	cardOrb = cv::ORB::create(2000, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
 	bfm = cv::BFMatcher::create();
 }
 
@@ -10,7 +10,7 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 {
 	cv::Mat tmp = cardsFile.clone();
 	brightnessContrast(tmp, 1.3, -15);
-	//increaseReadability(tmp);
+	increaseReadability(tmp);
 	//
 	
 	cardWidth = floor(cardsFile.cols / width);
@@ -42,6 +42,8 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 
 void PokerVision::findCards(Image& img, bool printRes)
 {
+	cv::Mat colorImage;
+	cv::cvtColor(img.mat, colorImage, cv::COLOR_GRAY2BGR);
 	std::string desc = "Detected hand: (";
 	int cardsFound = 0;
 	for (Card card : cards) {
@@ -51,9 +53,40 @@ void PokerVision::findCards(Image& img, bool printRes)
 		}
 		std::cout << "Matches : " << card.matchesGood.size() << std::endl;
 		if (card.matchesGood.size() > nbPointsToMatch) {
+
 			std::cout << "Found " << card.cardValue.ToString() << std::endl;
 			if (cardsFound > 0) desc += ", ";
 			desc += card.cardValue.ToShortString();
+
+			//Begin: Clipping
+			std::vector<cv::Point2f> obj, scene;
+
+			for (auto i : card.matchesGood) {
+				obj.push_back(card.keypoints[i.queryIdx].pt);
+				scene.push_back(img.keypoints[i.trainIdx].pt);
+			}
+			cv::Mat H = cv::findHomography(obj, scene, cv::RANSAC);
+
+			//transforme les angle de l'image dans le plan de l'autre image
+			std::vector<cv::Point2f> scene_corners(4);
+			cv::perspectiveTransform(card.corners, scene_corners, H);
+
+			cv::Scalar color(0, 0, 255);
+			int thickness = 3;
+			//Dessine sur le flux vidéo
+			cv::line(colorImage, scene_corners[0],
+				scene_corners[1], color, thickness);
+			cv::line(colorImage, scene_corners[1],
+				scene_corners[2], color, thickness);
+			cv::line(colorImage, scene_corners[2],
+				scene_corners[3], color, thickness);
+			cv::line(colorImage, scene_corners[3],
+				scene_corners[0], color, thickness);
+			//End: Clipping
+
+
+
+
 			if (showCards) {
 				card.showImage(showKeypoints);
 			}
@@ -62,6 +95,8 @@ void PokerVision::findCards(Image& img, bool printRes)
 	}
 	desc += ")";
 	std::cout << desc << std::endl;
+
+
 	if (printRes) {
 		int font = cv::FONT_HERSHEY_SIMPLEX;
 		cv::Point2f bottomLeftCornerOfText(25, 25);
@@ -69,16 +104,17 @@ void PokerVision::findCards(Image& img, bool printRes)
 		cv::Scalar fontColor(0, 0, 255);
 		int thickness = 1;
 		int lineType = 2;
-		cv::putText(img.mat, desc, bottomLeftCornerOfText, font, fontScale, fontColor, thickness, lineType);
+		cv::putText(colorImage, desc, bottomLeftCornerOfText, font, fontScale, fontColor, thickness, lineType);
 	}
+	img.mat = colorImage;
 }
 
 void PokerVision::increaseReadability(cv::Mat& img)
 {
 	cv::Mat tmp;
 	cv::cvtColor(img, tmp, cv::COLOR_BGR2GRAY);
-	//cv::threshold(tmp, tmp, 160, 255, cv::THRESH_BINARY);
-	cv::adaptiveThreshold(tmp, tmp, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 5, 12);
+	cv::threshold(tmp, tmp, 160, 255, cv::THRESH_BINARY);
+	//cv::adaptiveThreshold(tmp, tmp, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 5, 12);
 	img = tmp;
 }
 

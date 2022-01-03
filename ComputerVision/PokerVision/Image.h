@@ -19,7 +19,7 @@ public:
 	cv::Scalar color;
 	std::vector<std::vector<cv::DMatch>> matches;
 	std::vector<cv::DMatch> matchesGood;
-	std::string name = "";
+	std::string name = "Image";
 
 	void detectAndCompute(const cv::Ptr<cv::ORB>& orb);
 
