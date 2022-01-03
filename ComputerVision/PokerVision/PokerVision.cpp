@@ -1,9 +1,11 @@
 #include "PokerVision.h"
 
-PokerVision::PokerVision()
+PokerVision::PokerVision(bool pip, int nbMatch, float angleMargin): pipOnly(pip), nbPointsToMatch(nbMatch)
 {
 	cardOrb = cv::ORB::create(2000, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
 	bfm = cv::BFMatcher::create();
+	minAngle = 90 - angleMargin;
+	maxAngle = 90 + angleMargin;
 }
 
 void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int height)
@@ -40,73 +42,45 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 	}
 }
 
-void PokerVision::findCards(Image& img, bool printRes)
+void PokerVision::findCards(Image& img, bool enableLogs)
 {
-	cv::Mat colorImage;
-	cv::cvtColor(img.mat, colorImage, cv::COLOR_GRAY2BGR);
-	std::string desc = "Detected hand: (";
 	int cardsFound = 0;
 	for (Card card : cards) {
 		bfm = cv::BFMatcher::create();
 		if (bfm != nullptr) {
 			card.knnMatch(bfm, img, 0.75);
 		}
-		std::cout << "Matches : " << card.matchesGood.size() << std::endl;
+		if (enableLogs) {
+			std::cout << std::endl << card.cardValue.ToShortString() << " : " << card.matchesGood.size() << " matches";
+		}
+
 		if (card.matchesGood.size() > nbPointsToMatch) {
 
-			std::cout << "Found " << card.cardValue.ToString() << std::endl;
-			if (cardsFound > 0) desc += ", ";
-			desc += card.cardValue.ToShortString();
-
+			if (enableLogs) {
+				std::cout << " -> VALID";
+			}
 			//Begin: Clipping
 			std::vector<cv::Point2f> obj, scene;
-
 			for (auto i : card.matchesGood) {
 				obj.push_back(card.keypoints[i.queryIdx].pt);
 				scene.push_back(img.keypoints[i.trainIdx].pt);
 			}
-			cv::Mat H = cv::findHomography(obj, scene, cv::RANSAC);
+			card.homographyMatrix = cv::findHomography(obj, scene, cv::RANSAC);
 
-			//transforme les angle de l'image dans le plan de l'autre image
-			std::vector<cv::Point2f> scene_corners(4);
-			cv::perspectiveTransform(card.corners, scene_corners, H);
+			cv::perspectiveTransform(card.corners, card.gameCorners, card.homographyMatrix);
 
-			cv::Scalar color(0, 0, 255);
-			int thickness = 3;
-			//Dessine sur le flux vidéo
-			cv::line(colorImage, scene_corners[0],
-				scene_corners[1], color, thickness);
-			cv::line(colorImage, scene_corners[1],
-				scene_corners[2], color, thickness);
-			cv::line(colorImage, scene_corners[2],
-				scene_corners[3], color, thickness);
-			cv::line(colorImage, scene_corners[3],
-				scene_corners[0], color, thickness);
-			//End: Clipping
+			float a1 = std::abs(card.getAngleBetween(card.gameCorners[0], card.gameCorners[1], card.gameCorners[2]));
+			float a2 = std::abs(card.getAngleBetween(card.gameCorners[1], card.gameCorners[2], card.gameCorners[3]));
+			float a3 = std::abs(card.getAngleBetween(card.gameCorners[2], card.gameCorners[3], card.gameCorners[0]));
+			float a4 = std::abs(card.getAngleBetween(card.gameCorners[3], card.gameCorners[0], card.gameCorners[1]));
 
-
-
-
-			if (showCards) {
-				card.showImage(showKeypoints);
+			if (angleIsValid(a1) && angleIsValid(a1) && angleIsValid(a1) && angleIsValid(a1))
+			{
+				foundCards.push_back(card);
 			}
 			cardsFound++;
 		}
 	}
-	desc += ")";
-	std::cout << desc << std::endl;
-
-
-	if (printRes) {
-		int font = cv::FONT_HERSHEY_SIMPLEX;
-		cv::Point2f bottomLeftCornerOfText(25, 25);
-		float fontScale = 0.7;
-		cv::Scalar fontColor(0, 0, 255);
-		int thickness = 1;
-		int lineType = 2;
-		cv::putText(colorImage, desc, bottomLeftCornerOfText, font, fontScale, fontColor, thickness, lineType);
-	}
-	img.mat = colorImage;
 }
 
 void PokerVision::increaseReadability(cv::Mat& img)
@@ -120,7 +94,6 @@ void PokerVision::increaseReadability(cv::Mat& img)
 
 void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightness)
 {
-
 	cv::Mat tmp = cv::Mat::zeros(img.size(), img.type());
 	for (int y = 0; y < img.rows; y++) {
 		for (int x = 0; x < img.cols; x++) {
@@ -130,4 +103,62 @@ void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightne
 		}
 	}
 	img = tmp;
+}
+
+void PokerVision::showResult(const Image img, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters)
+{
+	cv::Mat showImage = img.mat.clone();
+	cv::cvtColor(showImage, showImage,cv::COLOR_GRAY2BGR);
+
+
+	cv::Scalar roiColor(0, 0, 255);
+	int roiThickness = 2;
+
+	std::string desc = "Detected hand: (";
+	int cardCount = 0;
+
+	if (showPoints) {
+		for (int i = 0; i < img.keypoints.size(); ++i) {
+			cv::KeyPoint k = img.keypoints[i];
+			cv::circle(showImage, k.pt, 1, cv::Scalar(0, 255, 0), 1);
+		}
+	}
+
+	for (Card card : foundCards) {
+
+		if (cardCount > 0) desc += ", ";
+		cardCount++;
+		desc += card.cardValue.ToShortString();
+
+		if (showROI) {
+			//Dessine sur le flux vidéo
+			cv::line(showImage, card.gameCorners[0], card.gameCorners[1], roiColor, roiThickness);
+			cv::line(showImage, card.gameCorners[1], card.gameCorners[2], roiColor, roiThickness);
+			cv::line(showImage, card.gameCorners[2], card.gameCorners[3], roiColor, roiThickness);
+			cv::line(showImage, card.gameCorners[3], card.gameCorners[0], roiColor, roiThickness);
+			}
+		if (showCards) {
+			card.showImage(showPoints);
+		}
+	}
+	desc += ")";
+	std::cout << desc << std::endl;
+
+	if (showText) {
+		int font = cv::FONT_HERSHEY_SIMPLEX;
+		cv::Point2f bottomLeftCornerOfText(25, 25);
+		float fontScale = 0.7;
+		cv::Scalar fontColor(0, 0, 255);
+		int thickness = 1;
+		int lineType = 2;
+		cv::putText(showImage, desc, bottomLeftCornerOfText, font, fontScale, fontColor, thickness, lineType);
+	}
+
+	cv::imshow("Result", showImage);
+
+}
+
+bool PokerVision::angleIsValid(float angle)
+{
+	return (angle > minAngle && angle < maxAngle);
 }

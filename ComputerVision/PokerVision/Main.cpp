@@ -30,11 +30,10 @@ int main(int argc, char** argv)
 		system("pause");
 		return -1;
 	}
-	PokerVision p;
-	p.showCards = true;
-	p.showKeypoints = false;
-	p.pipOnly = false;
-	p.nbPointsToMatch = 100;
+	bool pipOnly = false;
+	int nbPointsToMatch = 100;
+	float angleTolerance = 5;
+	PokerVision p(pipOnly, nbPointsToMatch, angleTolerance);
 
 	cv::Mat testMat = testFile.clone();
 	p.brightnessContrast(testMat, 1.3, -15);
@@ -45,10 +44,14 @@ int main(int argc, char** argv)
 	testImage.name = "Test image";
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
-	p.findCards(testImage, true);
+	p.findCards(testImage,false);
 
-	std::cout << p.cards.size() << std::endl;
-	testImage.showImage(true);
+	bool showCards = true;
+	bool showPoints = false;
+	bool showText = true;
+	bool showROI = true;
+
+	p.showResult(testImage,showCards, showPoints, showText, showROI, false);
 	cv::waitKey(0);
 	cv::destroyAllWindows();
 	return 0;
