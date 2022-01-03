@@ -11,8 +11,6 @@ PokerVision::PokerVision(bool pip, int nbMatch, float angleMargin): pipOnly(pip)
 void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int height)
 {
 	cv::Mat tmp = cardsFile.clone();
-	brightnessContrast(tmp, 1.3, -15);
-	increaseReadability(tmp);
 	//
 	
 	cardWidth = floor(cardsFile.cols / width);
@@ -35,7 +33,12 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 
 			cv::Rect cardROI(cv::Point2f(minX, minY), cv::Point2f(maxX, maxY));
 			CardValue value(CardRank(14 - y), CardSuit(x));
-			Card card(tmp(cardROI), value, cardOrb);
+			Card card(tmp(cardROI),value);
+
+			brightnessContrast(card.mat, 1.3, -15);
+			increaseReadability(card.mat);
+			card.detectAndCompute(cardOrb);
+
 			cv::waitKey(0);
 			cards.push_back(card);
 		}
@@ -105,10 +108,17 @@ void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightne
 	img = tmp;
 }
 
-void PokerVision::showResult(const Image img, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters)
+void PokerVision::showResult(const Image& img, bool showProcessedImage, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters)
 {
-	cv::Mat showImage = img.mat.clone();
-	cv::cvtColor(showImage, showImage,cv::COLOR_GRAY2BGR);
+	cv::Mat showImage;
+	
+	if (showProcessedImage) {
+		showImage = img.mat.clone();
+		cv::cvtColor(showImage, showImage, cv::COLOR_GRAY2BGR);
+	}
+	else {
+		showImage = img.originalMat.clone();
+	}
 
 
 	cv::Scalar roiColor(0, 0, 255);
@@ -138,7 +148,7 @@ void PokerVision::showResult(const Image img, bool showCards, bool showPoints, b
 			cv::line(showImage, card.gameCorners[3], card.gameCorners[0], roiColor, roiThickness);
 			}
 		if (showCards) {
-			card.showImage(showPoints);
+			card.showImage(showPoints, !showProcessedImage);
 		}
 	}
 	desc += ")";

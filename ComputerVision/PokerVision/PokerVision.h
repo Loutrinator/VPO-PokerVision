@@ -8,7 +8,7 @@ public:
 	void findCards(Image& img, bool enableLogs);
 	void increaseReadability(cv::Mat& img);
 	void brightnessContrast(cv::Mat& img, double contrast, int brightness);
-	void showResult(const Image img, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters);
+	void showResult(const Image& img, bool showProcessedImage, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters);
 	std::vector<Card> cards;
 	std::vector<Card> foundCards;
 	cv::Ptr<cv::ORB> cardOrb;

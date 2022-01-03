@@ -14,6 +14,7 @@ public:
 
 	std::vector<cv::Point2f> corners;
 	cv::Mat mat;
+	cv::Mat originalMat;
 	std::vector<cv::KeyPoint> keypoints;
 	cv::Mat descriptor;
 	cv::Scalar color;
@@ -36,6 +37,6 @@ public:
 		const cv::Ptr<cv::ORB>& orb);
 	static float getAngleBetween(const cv::Point2f a, const cv::Point2f b, const cv::Point2f c);
 
-	void showImage(bool showPoints);
+	void showImage(bool showPoints, bool showOriginal);
 
 };

@@ -35,23 +35,23 @@ int main(int argc, char** argv)
 	float angleTolerance = 5;
 	PokerVision p(pipOnly, nbPointsToMatch, angleTolerance);
 
-	cv::Mat testMat = testFile.clone();
-	p.brightnessContrast(testMat, 1.3, -15);
-
-	p.increaseReadability(testMat);
-	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
-	Image testImage(testMat, imageOrb);
+	Image testImage(testFile);
 	testImage.name = "Test image";
+	p.brightnessContrast(testImage.mat, 1.3, -15);
+	p.increaseReadability(testImage.mat);
+	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
+	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
 	p.findCards(testImage,false);
-
+	
+	bool showProcessedImages = false;
 	bool showCards = true;
 	bool showPoints = false;
 	bool showText = true;
 	bool showROI = true;
+	p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, false);
 
-	p.showResult(testImage,showCards, showPoints, showText, showROI, false);
 	cv::waitKey(0);
 	cv::destroyAllWindows();
 	return 0;

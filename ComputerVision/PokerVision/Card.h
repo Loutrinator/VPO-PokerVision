@@ -5,7 +5,7 @@
 class Card : public Image
 {
 public:
-	Card(cv::Mat m, CardValue value, cv::Ptr<cv::ORB>& orb);
+	Card(cv::Mat m, CardValue value);
 	CardValue cardValue;
 	std::vector<cv::Point2f> gameCorners; //the corners of the card on the game board
 	cv::Mat homographyMatrix;

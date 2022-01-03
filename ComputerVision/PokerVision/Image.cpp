@@ -4,6 +4,7 @@
 
 void Image::init()
 {
+
 	color = cv::Scalar(
 		(double(rand()) / double(RAND_MAX)) * (255),
 		(double(rand()) / double(RAND_MAX)) * (255),
@@ -23,9 +24,9 @@ void Image::init()
 Image::Image() {
 	init();
 }
-Image::Image(cv::Mat m) : mat(m){}
+Image::Image(cv::Mat m) : mat(m), originalMat(m.clone()){}
 
-Image::Image(cv::Mat m, const cv::Ptr<cv::ORB>& orb) : mat(m) {
+Image::Image(cv::Mat m, const cv::Ptr<cv::ORB>& orb) : mat(m), originalMat(m.clone()) {
 	init();
 	detectAndCompute(orb);
 }
@@ -44,9 +45,18 @@ float Image::getAngleBetween(const cv::Point2f a, const cv::Point2f b, const cv:
 	return (int)floor(alpha * 180.f / 3.141592654 + 0.5);
 }
 
-void Image::showImage(bool showPoints)
+void Image::showImage(bool showPoints, bool showOriginal)
 {
-	cv::Mat showImage = mat.clone();
+	cv::Mat showImage;
+
+	if (showOriginal) {
+		showImage = originalMat.clone();
+	}
+	else {
+		showImage = mat.clone();
+		cv::cvtColor(showImage, showImage, cv::COLOR_GRAY2BGR);
+	}
+
 	if (showPoints) {
 		for (int i = 0; i < keypoints.size(); ++i) {
 			cv::KeyPoint k = keypoints[i];
