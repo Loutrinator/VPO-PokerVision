@@ -7,7 +7,8 @@ public:
 	PokerVision(bool pip, int nbMatch, float angleMargin);
 	void setCardsDataset(const cv::Mat& cardsFile, int width, int height);
 	void findCards(Image& img, bool enableLogs);
-	void removeOverlapingImages();
+	void removeOverlapingImages(float minDist);
+	void groupCards(float minDist);
 
 	cv::Point2f getBarrycenter(std::vector<cv::Point2f> points);
 	
@@ -32,5 +33,6 @@ private:
 	bool angleIsValid(float angle);
 	cv::Scalar HSV2BGR(float h, float s, float v);
 	cv::Scalar BGR2HSV(float b, float g, float r);
+	std::vector<std::vector<int>> getGroupCardIdsByDistance(float dist);
 };
 

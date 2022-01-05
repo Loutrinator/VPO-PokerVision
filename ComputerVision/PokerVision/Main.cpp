@@ -44,14 +44,15 @@ int main(int argc, char** argv)
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
 	p.findCards(testImage, true);
-	p.removeOverlapingImages();
+	p.removeOverlapingImages(50);
+	p.groupCards(500);
 	
 	bool showProcessedImages = false;
-	bool showCards = true;
+	bool showCards = false;
 	bool showPoints = false;
 	bool showText = true;
 	bool showROI = true;
-	bool showBarrycenter = true;
+	bool showBarrycenter = false;
 	p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, showBarrycenter);
 
 	cv::waitKey(0);
