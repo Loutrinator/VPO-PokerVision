@@ -148,6 +148,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Card.cpp" />
+    <ClCompile Include="CardGroup.cpp" />
     <ClCompile Include="CardValue.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -155,6 +156,8 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes.jpg" />
+    <Image Include="resources\party-1.png" />
+    <Image Include="resources\party-2.png" />
     <Image Include="resources\test-1.png" />
     <Image Include="resources\test-2.png" />
     <Image Include="resources\test-3.png" />
@@ -162,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Card.h" />
+    <ClInclude Include="CardGroup.h" />
     <ClInclude Include="CardValue.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="PokerVision.h" />

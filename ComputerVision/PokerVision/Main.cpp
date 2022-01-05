@@ -24,14 +24,14 @@ int main(int argc, char** argv)
 		system("pause");
 		return -1;
 	}
-	cv::Mat testFile = cv::imread("resources/test-2.png");
+	cv::Mat testFile = cv::imread("resources/party-2.png");
 	if (cardsImage.empty()) {
 		std::cout << "Could not open or find the image to test" << std::endl;
 		system("pause");
 		return -1;
 	}
 	bool pipOnly = false;
-	int nbPointsToMatch = 100;
+	int nbPointsToMatch = 75;
 	float angleTolerance = 5;
 	PokerVision p(pipOnly, nbPointsToMatch, angleTolerance);
 
@@ -43,14 +43,16 @@ int main(int argc, char** argv)
 	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
-	p.findCards(testImage,false);
+	p.findCards(testImage, true);
+	p.removeOverlapingImages();
 	
 	bool showProcessedImages = false;
 	bool showCards = true;
 	bool showPoints = false;
 	bool showText = true;
 	bool showROI = true;
-	p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, false);
+	bool showBarrycenter = true;
+	p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, showBarrycenter);
 
 	cv::waitKey(0);
 	cv::destroyAllWindows();

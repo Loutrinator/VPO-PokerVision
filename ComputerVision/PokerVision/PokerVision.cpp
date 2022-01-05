@@ -57,7 +57,9 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 			std::cout << std::endl << card.cardValue.ToShortString() << " : " << card.matchesGood.size() << " matches";
 		}
 
-		if (card.matchesGood.size() > nbPointsToMatch) {
+		card.nbMatches = card.matchesGood.size();
+
+		if (card.nbMatches > nbPointsToMatch) {
 
 			if (enableLogs) {
 				std::cout << " -> VALID";
@@ -71,7 +73,7 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 			card.homographyMatrix = cv::findHomography(obj, scene, cv::RANSAC);
 
 			cv::perspectiveTransform(card.corners, card.gameCorners, card.homographyMatrix);
-
+			card.center = getBarrycenter(card.gameCorners);
 			float a1 = std::abs(card.getAngleBetween(card.gameCorners[0], card.gameCorners[1], card.gameCorners[2]));
 			float a2 = std::abs(card.getAngleBetween(card.gameCorners[1], card.gameCorners[2], card.gameCorners[3]));
 			float a3 = std::abs(card.getAngleBetween(card.gameCorners[2], card.gameCorners[3], card.gameCorners[0]));
@@ -84,6 +86,101 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 			cardsFound++;
 		}
 	}
+}
+
+void PokerVision::removeOverlapingImages()
+{
+	float minDist = 100;
+
+	//2 lists that helps grouping cards by their barrycenters
+	std::vector<cv::Point2f> sums;
+	std::vector<std::vector<int>> groups;
+
+
+
+	std::vector<int> group;
+	group.push_back(0);
+	groups.push_back(group);//ajout du premier groupe contenant la première carte
+	sums.push_back(foundCards[0].center);
+
+	for (int i = 1; i < foundCards.size(); ++i) {
+		cv::Point2f center = foundCards[i].center;
+		bool addedToGroup = false;
+		for (int j = 0; j < groups.size(); ++j) {
+			std::vector<int> g = groups[j];
+			cv::Point2f moyPoint = cv::Point2f(sums[j].x / g.size(), sums[j].y / g.size());
+			if (cv::norm(moyPoint - center) < minDist) { // on est assez proche de la norme 
+				groups[j].push_back(i);
+				sums[j] += center;
+				addedToGroup = true;
+				break;
+			}
+		}
+		if (!addedToGroup) {
+			std::vector<int> g;
+			g.push_back(i);
+			groups.push_back(g);
+			sums.push_back(foundCards[i].center);
+		}
+	}
+
+	std::vector<Card> cleanedUpCards;
+	for (int i = 0; i < groups.size(); ++i) {
+		std::vector<int> group = groups[i];
+		if (group.size() > 1) {
+
+			int maxMatched = -15000;
+			int maxMatchedId = 0;
+			std::cout << "multiple matches in one place !" << std::endl;
+			for (int j = 0; j < group.size(); ++j) {
+				int cardId = group[j];
+				std::cout << foundCards[cardId].cardValue.ToShortString() << " : " << foundCards[cardId].nbMatches << std::endl;
+				if (maxMatched < foundCards[cardId].nbMatches) {
+					maxMatchedId = cardId;
+					maxMatched = foundCards[cardId].nbMatches;
+				}
+			}
+			Card chosenCard = foundCards[maxMatchedId];
+			std::cout << "Chosen card : " << chosenCard.cardValue.ToShortString() << " maxMatched : " << maxMatched << " card matches : " << chosenCard.nbMatches << std::endl;
+			cleanedUpCards.push_back(chosenCard);
+
+		}
+		else {
+			cleanedUpCards.push_back(foundCards[group[0]]);
+		}
+	}
+
+	foundCards = cleanedUpCards;
+	/*
+	for (int i = 0; i < groups.size(); ++i) {
+		std::vector<int> group = groups[i];
+		CardGroup cg;
+		for (int j = 0; j < group.size(); ++j) {
+			int cardId = group[j];
+			cg.cards.push_back(foundCards[cardId]);
+		}
+		float hue = (180 / groups.size()) * i;
+		cv::Scalar bgrColor = HSV2BGR(hue, 255, 255);
+		std::cout << "hue : " << hue << " color " << bgrColor[0] << ", " << bgrColor[1] << ", " << bgrColor[2] << std::endl;
+		cg.setColors(bgrColor, cv::Scalar(255, 255, 0));
+		cardGroups.push_back(cg);
+	}
+	*/
+}
+
+cv::Point2f PokerVision::getBarrycenter(std::vector<cv::Point2f> points)
+{
+	float x = 0;
+	float y = 0;
+	int count = 0;
+	for (cv::Point2f point : points) {
+		x += point.x;
+		y += point.y;
+		count++;
+	}
+	x = x / (float)count;
+	y = y / (float)count;
+	return cv::Point2f(x, y);
 }
 
 void PokerVision::increaseReadability(cv::Mat& img)
@@ -120,8 +217,6 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 		showImage = img.originalMat.clone();
 	}
 
-
-	cv::Scalar roiColor(0, 0, 255);
 	int roiThickness = 2;
 
 	std::string desc = "Detected hand: (";
@@ -133,24 +228,31 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 			cv::circle(showImage, k.pt, 1, cv::Scalar(0, 255, 0), 1);
 		}
 	}
-
+	std::vector<CardGroup> cgs = cardGroups;
+	//for (CardGroup group : cardGroups) {
+	//	for (Card card : group.cards) {
 	for (Card card : foundCards) {
+			if (cardCount > 0) desc += ", ";
+			cardCount++;
+			desc += card.cardValue.ToShortString();
 
-		if (cardCount > 0) desc += ", ";
-		cardCount++;
-		desc += card.cardValue.ToShortString();
-
-		if (showROI) {
-			//Dessine sur le flux vidéo
-			cv::line(showImage, card.gameCorners[0], card.gameCorners[1], roiColor, roiThickness);
-			cv::line(showImage, card.gameCorners[1], card.gameCorners[2], roiColor, roiThickness);
-			cv::line(showImage, card.gameCorners[2], card.gameCorners[3], roiColor, roiThickness);
-			cv::line(showImage, card.gameCorners[3], card.gameCorners[0], roiColor, roiThickness);
+			if (showROI) {
+				//Dessine sur le flux vidéo
+				cv::line(showImage, card.gameCorners[0], card.gameCorners[1], card.roiColor, roiThickness);
+				cv::line(showImage, card.gameCorners[1], card.gameCorners[2], card.roiColor, roiThickness);
+				cv::line(showImage, card.gameCorners[2], card.gameCorners[3], card.roiColor, roiThickness);
+				cv::line(showImage, card.gameCorners[3], card.gameCorners[0], card.roiColor, roiThickness);
 			}
-		if (showCards) {
-			card.showImage(showPoints, !showProcessedImage);
-		}
+			if (showBarrycenters) {
+				cv::circle(showImage, card.center, 2, card.centerColor, 2);
+			}
+
+			if (showCards) {
+				card.showImage(showPoints, !showProcessedImage);
+			}
+		//}
 	}
+	
 	desc += ")";
 	std::cout << desc << std::endl;
 
@@ -171,4 +273,20 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 bool PokerVision::angleIsValid(float angle)
 {
 	return (angle > minAngle && angle < maxAngle);
+}
+
+cv::Scalar PokerVision::HSV2BGR(float h, float s, float v)
+{
+	cv::Mat hsv(1, 1, CV_8UC3, cv::Scalar(h, s, v));
+	cv::Mat	bgr;
+	cv::cvtColor(hsv, bgr, cv::COLOR_HSV2BGR);
+	return cv::Scalar(bgr.data[0], bgr.data[1], bgr.data[2]);
+}
+
+cv::Scalar PokerVision::BGR2HSV(float b, float g, float r)
+{
+	cv::Mat bgr(1, 1, CV_8UC3, cv::Scalar(b, g, r));
+	cv::Mat	hsv;
+	cv::cvtColor(bgr, hsv, cv::COLOR_BGR2HSV);
+	return cv::Scalar(hsv.data[0], hsv.data[1], hsv.data[2]);
 }

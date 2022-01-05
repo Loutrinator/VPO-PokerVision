@@ -21,6 +21,7 @@ public:
 	std::vector<std::vector<cv::DMatch>> matches;
 	std::vector<cv::DMatch> matchesGood;
 	std::string name = "Image";
+	cv::Point2f center;
 
 	void detectAndCompute(const cv::Ptr<cv::ORB>& orb);
 
