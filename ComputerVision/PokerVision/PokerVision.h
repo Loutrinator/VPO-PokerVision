@@ -12,7 +12,7 @@ public:
 
 	cv::Point2f getBarrycenter(std::vector<cv::Point2f> points);
 	
-	void increaseReadability(cv::Mat& img);
+	void divide(cv::Mat& img, cv::Vec3b rgb);
 	void brightnessContrast(cv::Mat& img, double contrast, int brightness);
 
 	void showImage(cv::Mat& img, std::string name, int width);
@@ -29,8 +29,8 @@ public:
 private:
 	int cardWidth = 0;
 	int cardHeight = 0;
-	float minAngle = 70;
-	float maxAngle = 120;
+	float minAngle = 45;
+	float maxAngle = 135;
 
 	bool angleIsValid(float angle);
 	cv::Scalar HSV2BGR(float h, float s, float v);

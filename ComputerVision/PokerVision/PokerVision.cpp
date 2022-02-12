@@ -79,11 +79,8 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 			float a3 = std::abs(card.getAngleBetween(card.gameCorners[2], card.gameCorners[3], card.gameCorners[0]));
 			float a4 = std::abs(card.getAngleBetween(card.gameCorners[3], card.gameCorners[0], card.gameCorners[1]));
 
-			if (angleIsValid(a1) && angleIsValid(a1) && angleIsValid(a1) && angleIsValid(a1))
-			{
-				foundCards.push_back(card);
-			}
-			cardsFound++;
+			if (angleIsValid(a1) && angleIsValid(a2) && angleIsValid(a3) && angleIsValid(a4))foundCards.push_back(card);
+			//foundCards.push_back(card);
 		}
 	}
 }
@@ -158,8 +155,41 @@ cv::Point2f PokerVision::getBarrycenter(std::vector<cv::Point2f> points)
 	return cv::Point2f(x, y);
 }
 
-void PokerVision::increaseReadability(cv::Mat& img)
+void PokerVision::divide(cv::Mat& img,cv::Vec3b rgb)
 {
+	cv::Mat whitened;
+	//Analyse les informations chromatiques de chaque couche et divise la couleur de fusion par la couleur de base.
+	//color : 187, 218, 234
+	//        R    G    B
+
+	for (int y = 0; y < img.rows; y++) {
+		for (int x = 0; x < img.cols; x++) {
+			cv::Vec3b& pixel = img.at<cv::Vec3b>(cv::Point(x, y));
+			float rColorsDivided = pixel[2] == 0 ? 255.0 : (float)rgb[0] / (float)pixel[2];
+			float gColorsDivided = pixel[1] == 0 ? 255.0 : (float)rgb[1] / (float)pixel[1];
+			float bColorsDivided = pixel[0] == 0 ? 255.0 : (float)rgb[2] / (float)pixel[0];
+
+			rColorsDivided = rColorsDivided >= 255 ? 255 : rColorsDivided; //on empeche de dépasser 255
+			gColorsDivided = gColorsDivided >= 255 ? 255 : gColorsDivided; //on empeche de dépasser 255
+			bColorsDivided = bColorsDivided >= 255 ? 255 : bColorsDivided; //on empeche de dépasser 255
+
+			float r = 256 / rColorsDivided;
+			float g = 256 / gColorsDivided;
+			float b = 256 / bColorsDivided;
+
+			r = r >= 255 ? 255 : r;
+			g = g >= 255 ? 255 : g;
+			b = b >= 255 ? 255 : b;
+
+			pixel[0] = b;//B
+			pixel[1] = g;//G
+			pixel[2] = r;//R
+
+		}
+	}
+
+	//cv::divide(img, cv::Scalar(187, 218, 234), whitened);
+	//img = whitened;
 	//cv::Mat tmp;
 	//cv::cvtColor(img, tmp, cv::COLOR_BGR2GRAY);
 	//cv::threshold(tmp, tmp, 160, 255, cv::THRESH_BINARY);
@@ -204,7 +234,7 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 	
 	if (showProcessedImage) {
 		showImg = img.mat.clone();
-		cv::cvtColor(showImg, showImg, cv::COLOR_GRAY2BGR);
+		//cv::cvtColor(showImg, showImg, cv::COLOR_GRAY2BGR);
 	}
 	else {
 		showImg = img.originalMat.clone();
@@ -295,7 +325,8 @@ cv::Scalar PokerVision::BGR2HSV(float b, float g, float r)
 
 std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 {
-
+	std::cout << "GROUP CARDS" << std::endl;
+	std::cout << foundCards.size() << " cards found before grouping" << std::endl;
 	std::vector<cv::Point2f> sums;
 	std::vector<std::vector<int>> groups;
 
@@ -303,6 +334,7 @@ std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 	group.push_back(0);
 	groups.push_back(group);//ajout du premier groupe contenant la premi�re carte
 	sums.push_back(foundCards[0].center);
+
 
 	for (int i = 1; i < foundCards.size(); ++i) {
 		cv::Point2f center = foundCards[i].center;
@@ -324,6 +356,7 @@ std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 			sums.push_back(foundCards[i].center);
 		}
 	}
+	std::cout << "Cards are grouped in " << groups.size() << " groups." << std::endl;
 	return groups;
 
 }

@@ -13,7 +13,6 @@
 
 int main(int argc, char** argv)
 {
-	std::cout << "RONAN " << std::endl;
 	std::string windowName = "card";
 	bool BnWInputs = true;
 
@@ -38,18 +37,21 @@ int main(int argc, char** argv)
 	Image testImage(testFile);
 	testImage.name = "Test image";
 	//cv::imshow("original", testImage.mat);
-	p.brightnessContrast(testImage.mat, 1.3, 0);
+	//p.brightnessContrast(testImage.mat, 1.3, 0);
 	//cv::imshow("processed", testImage.mat);
-	p.increaseReadability(testImage.mat);
+	p.divide(testImage.mat, cv::Vec3b(187,218,234));
+	//p.divide(testImage.mat, cv::Vec3b(226,188,82));//divide
+	cv::imshow("processed", testImage.mat);
+
 	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
 	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
 	p.findCards(testImage, true);
 	p.removeOverlapingImages(150);
-	p.groupCards(700);
+	p.groupCards(300);
 	
-	bool showProcessedImages = false;
+	bool showProcessedImages = true;
 	bool showCards = true;
 	bool showPoints = false;
 	bool showText = true;

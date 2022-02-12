@@ -155,6 +155,7 @@
     <ClCompile Include="PokerVision.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="resources\cartes-badlight.png" />
     <Image Include="resources\cartes.jpg" />
     <Image Include="resources\party-1.png" />
     <Image Include="resources\party-2.png" />

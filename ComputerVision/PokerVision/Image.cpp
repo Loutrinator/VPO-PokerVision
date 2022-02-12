@@ -54,7 +54,7 @@ void Image::showImage(bool showPoints, bool showOriginal)
 	}
 	else {
 		showImage = mat.clone();
-		cv::cvtColor(showImage, showImage, cv::COLOR_GRAY2BGR);
+		//cv::cvtColor(showImage, showImage, cv::COLOR_GRAY2BGR);
 	}
 
 	if (showPoints) {
