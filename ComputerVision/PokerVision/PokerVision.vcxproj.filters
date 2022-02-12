@@ -52,6 +52,69 @@
     <Image Include="resources\party-2.png">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="resources\table-easy1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-easy2.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-easy3.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-easy4.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-easy5.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-easy6.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard2.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard3.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard4.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard5.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard6.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-hard7.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium1.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium2.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium3.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium4.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium5.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium6.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium7.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="resources\table-medium8.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Image.h">

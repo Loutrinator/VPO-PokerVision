@@ -18,7 +18,7 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 
-			//on calcule la zone à lire pour récupérer notre image
+			//on calcule la zone ï¿½ lire pour rï¿½cupï¿½rer notre image
 			float minX = x * cardWidth + borderOffset;
 			float minY = y * cardHeight + borderOffset;
 			float maxX = (x + 1) * cardWidth - borderOffset;
@@ -36,7 +36,7 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 			Card card(tmp(cardROI),value);
 
 			brightnessContrast(card.mat, 1.3, -15);
-			increaseReadability(card.mat);
+			//increaseReadability(card.mat);
 			card.detectAndCompute(cardOrb);
 
 			cv::waitKey(0);
@@ -90,8 +90,10 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 
 void PokerVision::removeOverlapingImages(float minDist)
 {
+	std::cout << std::endl << std::endl << "REMOVE OVERLAPPING" << std::endl;
 	std::vector<std::vector<int>> groups = getGroupCardIdsByDistance(minDist);
-
+	std::cout << groups.size() << " groups found" << std::endl;
+	
 	std::vector<Card> cleanedUpCards;
 	for (int i = 0; i < groups.size(); ++i) {
 		std::vector<int> group = groups[i];
@@ -99,10 +101,10 @@ void PokerVision::removeOverlapingImages(float minDist)
 
 			int maxMatched = -15000;
 			int maxMatchedId = 0;
-			std::cout << "multiple matches in one place !" << std::endl;
+			std::cout << std::endl << "multiple matches in one place !" << std::endl;
 			for (int j = 0; j < group.size(); ++j) {
 				int cardId = group[j];
-				std::cout << foundCards[cardId].cardValue.ToShortString() << " : " << foundCards[cardId].nbMatches << std::endl;
+				std::cout << "Potential mismatch : " << foundCards[cardId].cardValue.ToString() << " : " << foundCards[cardId].nbMatches << std::endl;
 				if (maxMatched < foundCards[cardId].nbMatches) {
 					maxMatchedId = cardId;
 					maxMatched = foundCards[cardId].nbMatches;
@@ -158,11 +160,11 @@ cv::Point2f PokerVision::getBarrycenter(std::vector<cv::Point2f> points)
 
 void PokerVision::increaseReadability(cv::Mat& img)
 {
-	cv::Mat tmp;
-	cv::cvtColor(img, tmp, cv::COLOR_BGR2GRAY);
-	cv::threshold(tmp, tmp, 160, 255, cv::THRESH_BINARY);
+	//cv::Mat tmp;
+	//cv::cvtColor(img, tmp, cv::COLOR_BGR2GRAY);
+	//cv::threshold(tmp, tmp, 160, 255, cv::THRESH_BINARY);
 	//cv::adaptiveThreshold(tmp, tmp, 255, cv::ADAPTIVE_THRESH_MEAN_C, cv::THRESH_BINARY, 5, 12);
-	img = tmp;
+	//img = tmp;
 }
 
 void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightness)
@@ -178,34 +180,43 @@ void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightne
 	img = tmp;
 }
 
+void PokerVision::showImage(cv::Mat& img, std::string name, int width)
+{
+	cv::Mat res = img.clone();
+	int height = img.rows * width / img.cols ;
+	cv::Size size(width, height);
+	cv::resize(img, res, size);
+	cv::imshow(name, res);
+}
+
 void PokerVision::showResult(const Image& img, bool showProcessedImage, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters)
 {
 	//Settings pour le texte
 	int font = cv::FONT_HERSHEY_SIMPLEX;
 	cv::Point2f textOffset(0, 15);
-	float fontScale = 0.4;
+	float fontScale = 2;
 	cv::Scalar fontColor(255, 255, 255);
-	int thickness = 1.5;
+	int thickness = 3;
 	int lineType = 2;
 
 
-	cv::Mat showImage;
+	cv::Mat showImg;
 	
 	if (showProcessedImage) {
-		showImage = img.mat.clone();
-		cv::cvtColor(showImage, showImage, cv::COLOR_GRAY2BGR);
+		showImg = img.mat.clone();
+		cv::cvtColor(showImg, showImg, cv::COLOR_GRAY2BGR);
 	}
 	else {
-		showImage = img.originalMat.clone();
+		showImg = img.originalMat.clone();
 	}
 
-	int roiThickness = 2;
+	int roiThickness = 3;
 
 
 	if (showPoints) {
 		for (int i = 0; i < img.keypoints.size(); ++i) {
 			cv::KeyPoint k = img.keypoints[i];
-			cv::circle(showImage, k.pt, 1, cv::Scalar(0, 255, 0), 1);
+			cv::circle(showImg, k.pt, 1, cv::Scalar(0, 255, 0), 1);
 		}
 	}
 	std::vector<CardGroup> cgs = cardGroups;
@@ -224,21 +235,21 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 			desc += card.cardValue.ToString();
 
 			if (showROI) {
-				//Dessine sur le flux vidéo
-				cv::line(showImage, card.gameCorners[0], card.gameCorners[1], card.roiColor, roiThickness);
-				cv::line(showImage, card.gameCorners[1], card.gameCorners[2], card.roiColor, roiThickness);
-				cv::line(showImage, card.gameCorners[2], card.gameCorners[3], card.roiColor, roiThickness);
-				cv::line(showImage, card.gameCorners[3], card.gameCorners[0], card.roiColor, roiThickness);
+				//Dessine sur le flux vidï¿½o
+				cv::line(showImg, card.gameCorners[0], card.gameCorners[1], card.roiColor, roiThickness);
+				cv::line(showImg, card.gameCorners[1], card.gameCorners[2], card.roiColor, roiThickness);
+				cv::line(showImg, card.gameCorners[2], card.gameCorners[3], card.roiColor, roiThickness);
+				cv::line(showImg, card.gameCorners[3], card.gameCorners[0], card.roiColor, roiThickness);
 			}
 			if (showBarrycenters) {
-				cv::circle(showImage, card.center, 2, card.centerColor, 2);
+				cv::circle(showImg, card.center, 2, card.centerColor, 2);
 			}
 
 			if (showCards) {
 				card.showImage(showPoints, !showProcessedImage);
 			}
 
-			//création du ROI du groupe pour afficher le texte en dessous
+			//crï¿½ation du ROI du groupe pour afficher le texte en dessous
 			for (cv::Point2f corner : card.gameCorners) {
 				if (corner.x < minROIx) minROIx = corner.x;
 				if (corner.y < minROIy) minROIy = corner.y;
@@ -252,13 +263,12 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 		if (showText) {
 			cv::Point2f textPos((minROIx + maxROIx) / 2, maxROIy);
 			textPos += textOffset;
-			textPos += cv::Point2f(-(fontScale * 15 * desc.length())/2,0); //décalage proportionnel a la longueur du texte pour le centrer par rapport au groupe de cartes
-			cv::putText(showImage, desc, textPos, font, fontScale, fontColor, thickness, lineType);
+			textPos += cv::Point2f(-(fontScale * 15 * desc.length())/2,0); //dï¿½calage proportionnel a la longueur du texte pour le centrer par rapport au groupe de cartes
+			cv::putText(showImg, desc, textPos, font, fontScale, fontColor, thickness, lineType);
 		}
 	}
-	
-
-	cv::imshow("Result", showImage);
+	showImage(showImg, "result", 1000);
+	//cv::imwrite("result.jpg", showImg);
 
 }
 
@@ -291,7 +301,7 @@ std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 
 	std::vector<int> group;
 	group.push_back(0);
-	groups.push_back(group);//ajout du premier groupe contenant la première carte
+	groups.push_back(group);//ajout du premier groupe contenant la premiï¿½re carte
 	sums.push_back(foundCards[0].center);
 
 	for (int i = 1; i < foundCards.size(); ++i) {
