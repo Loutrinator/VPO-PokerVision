@@ -13,9 +13,9 @@ public:
 	cv::Point2f getBarrycenter(std::vector<cv::Point2f> points);
 	
 	void divide(cv::Mat& img, cv::Vec3b rgb);
-	void brightnessContrast(cv::Mat& img, double contrast, int brightness);
+	void static brightnessContrast(cv::Mat& img, double contrast, int brightness);
 
-	void showImage(cv::Mat& img, std::string name, int width);
+	void static showImage(cv::Mat& img, std::string name, int width);
 	
 	void showResult(const Image& img, bool showProcessedImage, bool showCards, bool showPoints, bool showText, bool showROI, bool showBarrycenters);
 	std::vector<Card> cards;

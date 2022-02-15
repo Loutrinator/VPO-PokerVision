@@ -27,6 +27,8 @@ public:
 
 	void knnMatch(const cv::Ptr<cv::BFMatcher>& bfm, const Image& img, const float distance);
 
+	cv::Mat convertToHsv();
+
 	void Clipping(
 		const Image& rightImg,
 		cv::Mat& outImag,

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 		return -1;
 	}
 	cv::Mat testFile = cv::imread("resources/table-easy1.jpg");
-	if (cardsImage.empty()) {
+	if (testFile.empty()) {
 		std::cout << "Could not open or find the image to test" << std::endl;
 		system("pause");
 		return -1;
@@ -41,7 +41,9 @@ int main(int argc, char** argv)
 	//cv::imshow("processed", testImage.mat);
 	p.divide(testImage.mat, cv::Vec3b(187,218,234));
 	//p.divide(testImage.mat, cv::Vec3b(226,188,82));//divide
-	cv::imshow("processed", testImage.mat);
+	//cv::imshow("processed", testImage.mat);
+
+	testImage.convertToHsv();
 
 	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
 	testImage.detectAndCompute(imageOrb);

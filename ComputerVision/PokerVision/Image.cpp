@@ -1,5 +1,6 @@
 #include "Image.h"
 #include <filesystem>
+#include "PokerVision.h"
 
 
 void Image::init()
@@ -24,7 +25,7 @@ void Image::init()
 Image::Image() {
 	init();
 }
-Image::Image(cv::Mat m) : mat(m), originalMat(m.clone()){}
+Image::Image(cv::Mat m) : mat(m), originalMat(m.clone()) {}
 
 Image::Image(cv::Mat m, const cv::Ptr<cv::ORB>& orb) : mat(m), originalMat(m.clone()) {
 	init();
@@ -86,6 +87,39 @@ void Image::knnMatch(const cv::Ptr<cv::BFMatcher>& bfm, const Image& img, const 
 			}
 		}
 	}
+}
+
+cv::Mat Image::convertToHsv() {
+	cv::Mat dst = mat.clone();
+
+	PokerVision::brightnessContrast(dst,1,1.6);
+	cv::Mat hsv;
+	cv::cvtColor(dst, hsv, cv::COLOR_BGR2HSV);
+
+	PokerVision::showImage(dst, "mat", 720);
+	std::vector<cv::Mat> channels;
+	cv::split(hsv, channels);
+
+	cv::Mat H = channels[0];
+	cv::Mat S = channels[1];
+	cv::Mat V = channels[2];
+
+	cv::Mat shiftedH = H.clone();
+	int shift = 20; // in openCV hue values go from 0 to 180 (so have to be doubled to get to 0 .. 360) because of byte range from 0 to 255
+	for (int j = 0; j < shiftedH.rows; ++j)
+		for (int i = 0; i < shiftedH.cols; ++i)
+		{
+			shiftedH.at<unsigned char>(j, i) = (shiftedH.at<unsigned char>(j, i) + shift) % 180;
+		}
+	PokerVision::showImage(shiftedH, "shiftedH", 720);
+	cv::Mat cannyH;
+	cv::Canny(H, cannyH, 200, 100);
+	PokerVision::showImage(cannyH, "cannyH", 720);
+	//cv::Mat cannyS;
+	//cv::Canny(S, cannyS, 200, 100);
+	//PokerVision::showImage(cannyS, "cannyS", 720);
+
+	return hsv;
 }
 
 void Image::Clipping(const Image& rightImg,
