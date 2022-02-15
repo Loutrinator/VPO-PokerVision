@@ -298,7 +298,7 @@ void PokerVision::showResult(const Image& img, bool showProcessedImage, bool sho
 		}
 	}
 	showImage(showImg, "result", 1000);
-	//cv::imwrite("result.jpg", showImg);
+	cv::imwrite("result.jpg", showImg);
 
 }
 
