@@ -36,15 +36,10 @@ int main(int argc, char** argv)
 
 	Image testImage(testFile);
 	testImage.name = "Test image";
-	//cv::imshow("original", testImage.mat);
-	//p.brightnessContrast(testImage.mat, 1.3, 0);
-	//cv::imshow("processed", testImage.mat);
+
 	p.divide(testImage.mat, cv::Vec3b(187,218,234));
-	//p.divide(testImage.mat, cv::Vec3b(226,188,82));//divide
 
-	//cv::imshow("processed", testImage.mat);
-
-	testImage.convertToHsv();
+	//testImage.convertToHsv();
 
 
 
