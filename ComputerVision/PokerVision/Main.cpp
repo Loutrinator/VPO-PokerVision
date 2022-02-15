@@ -29,6 +29,20 @@ int main(int argc, char** argv)
 		system("pause");
 		return -1;
 	}
+
+	cv::Mat tRes, tResNb, cres;
+	std::vector<std::vector<cv::Point> > contours;
+
+	cv::cvtColor(testFile, tResNb, cv::COLOR_BGR2GRAY);
+	cv::threshold( tResNb, tRes, 128,255, cv::THRESH_BINARY);
+	cv::findContours(tRes, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+	cv::Mat copy = testFile.clone();
+
+	cv::drawContours(copy, contours, -1, cv::Scalar( 255,0,0 ),5);
+	PokerVision::showImage(copy, "cres", 720);
+
+
 	bool pipOnly = false;
 	int nbPointsToMatch = 10;
 	float angleTolerance = 5;
@@ -41,11 +55,9 @@ int main(int argc, char** argv)
 
 	//testImage.convertToHsv();
 
-
-
 	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
 	testImage.detectAndCompute(imageOrb);
-
+	
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
 	p.findCards(testImage, true);
 	p.removeOverlapingImages(150);
