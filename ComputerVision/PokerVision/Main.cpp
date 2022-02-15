@@ -31,15 +31,39 @@ int main(int argc, char** argv)
 	}
 
 	cv::Mat tRes, tResNb, cres;
-	std::vector<std::vector<cv::Point> > contours;
+	std::vector<std::vector<cv::Point> > contours, goodContours;
 
 	cv::cvtColor(testFile, tResNb, cv::COLOR_BGR2GRAY);
 	cv::threshold( tResNb, tRes, 128,255, cv::THRESH_BINARY);
+
+	PokerVision::showImage(tRes, "tRes", 720);
 	cv::findContours(tRes, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+	for (size_t i = 0; i < contours.size(); i++)
+	{
+
+		//Si c'est au moins un quad 
+		//TODO : && si le ratio est plus ou moins le même qu'une carte
+		if (contours[i].size() > 4)
+		{
+			
+			float minROIx = 10000000;
+			float minROIy = 10000000;
+			float maxROIx = -10000000;
+			float maxROIy = -10000000;
+			for (cv::Point corner : contours[i]) {
+				if (corner.x < minROIx) minROIx = corner.x;
+				if (corner.y < minROIy) minROIy = corner.y;
+				if (corner.x > maxROIx) maxROIx = corner.x;
+				if (corner.y > maxROIy) maxROIy = corner.y;
+			}
+			goodContours.push_back(contours[i]);
+		}
+	}
 
 	cv::Mat copy = testFile.clone();
 
-	cv::drawContours(copy, contours, -1, cv::Scalar( 255,0,0 ),5);
+	cv::drawContours(copy, goodContours, -1, cv::Scalar( 255,255,0 ),5);
 	PokerVision::showImage(copy, "cres", 720);
 
 
