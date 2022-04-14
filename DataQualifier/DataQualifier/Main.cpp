@@ -18,108 +18,134 @@
 #include "opencv2/highgui.hpp"
 
 #include <iostream>
+#include "ImageData.h"
 
-
-static void help(char** argv)
-{
-    std::cout << "\nThis program demonstrated the floodFill() function\n"
-        "Call:\n"
-        << argv[0]
-        << " [image_name -- Default: fruits.jpg]\n" << std::endl;
-
-    std::cout << "Hot keys: \n"
-        "\tESC - quit the program\n"
-        "\tc - switch color/grayscale mode\n"
-        "\tm - switch mask mode\n"
-        "\tr - restore the original image\n"
-        "\ts - use null-range floodfill\n"
-        "\tf - use gradient floodfill with fixed(absolute) range\n"
-        "\tg - use gradient floodfill with floating(relative) range\n"
-        "\t4 - use 4-connectivity mode\n"
-        "\t8 - use 8-connectivity mode\n" << std::endl;
-}
 
 cv::Scalar roiColor = cv::Scalar(255, 0, 0);
 cv::Mat image, img0;
 int ffillMode = 1;
 int cardNumber = 0, cardColor = 0;
 std::vector<cv::Point> points;
+std::vector<cv::Mat> undo_image;
 int roiThickness = 4;
+std::vector<ImageData> datas;
+
+static void help(char** argv)
+{
+	std::cout << "\nThis program demonstrated the floodFill() function\n"
+		"Call:\n"
+		<< argv[0]
+		<< " [image_name -- Default: fruits.jpg]\n" << std::endl;
+
+	std::cout << "Hot keys: \n"
+		"\tESC - quit the program\n"
+		"\tc - switch color/grayscale mode\n"
+		"\tm - switch mask mode\n"
+		"\tr - restore the original image\n"
+		"\ts - use null-range floodfill\n"
+		"\tf - use gradient floodfill with fixed(absolute) range\n"
+		"\tg - use gradient floodfill with floating(relative) range\n"
+		"\t4 - use 4-connectivity mode\n"
+		"\t8 - use 8-connectivity mode\n" << std::endl;
+}
+
+
+void drawPoints() {
+	if (points.size() == 2)
+		cv::line(image, points[0], points[1], roiColor, roiThickness);
+	if (points.size() == 3)
+		cv::line(image, points[1], points[2], roiColor, roiThickness);
+	if (points.size() == 4) {
+		cv::line(image, points[2], points[3], roiColor, roiThickness);
+		cv::line(image, points[3], points[0], roiColor, roiThickness);
+	}
+
+	cv::imshow("image", image);
+}
 
 static void onMouse(int event, int x, int y, int, void*)
 {
-
-    if (event != cv::EVENT_LBUTTONDOWN)
-        return;
-
-    cv::Point p = cv::Point(x, y);
-    //Ajouter les points lors du clic
-    //clic enter for show les carrées
-    points.push_back(p);
-    std::cout << "(x : " << p.x << "; y :"<< p.y << ";) pixels were repainted\n";
-    std::cout << points.size() << std::endl;
+	if (event != cv::EVENT_LBUTTONDOWN)
+		return;
+	if (points.size() >= 4)
+		return;
+		
+	cv::Point p = cv::Point(x, y);
+	//Ajouter les points lors du clic
+	//clic enter for show les carrées
+	points.push_back(p);
+	drawPoints();
+	std::cout << "(x : " << p.x << "; y :" << p.y << ";) pixels were repainted\n";
+	std::cout << points.size() << std::endl;
 }
 
 
 int main(int argc, char** argv)
 {
-    cv::CommandLineParser parser(argc, argv,
-        "{help h | | show help message}{@image|fruits.jpg| input image}"
-    );
-    if (parser.has("help"))
-    {
-        parser.printMessage();
-        return 0;
-    }
-    std::string filename = parser.get<std::string>("@image");
-    img0 = cv::imread(cv::samples::findFile(filename), 1);
+	cv::CommandLineParser parser(argc, argv,
+		"{help h | | show help message}{@image|fruits.jpg| input image}"
+	);
+	if (parser.has("help"))
+	{
+		parser.printMessage();
+		return 0;
+	}
+	std::string filename = parser.get<std::string>("@image");
+	img0 = cv::imread(cv::samples::findFile(filename), 1);
 
-    if (img0.empty())
-    {
-       std::cout << "Image empty\n";
-        parser.printMessage();
-        return 0;
-    }
-    help(argv);
+	if (img0.empty())
+	{
+		std::cout << "Image empty\n";
+		parser.printMessage();
+		return 0;
+	}
+	help(argv);
 
-    img0.copyTo(image);
-   
-    cv::namedWindow("image", 0);
-    cv::createTrackbar("card_number", "image", &cardNumber, 12, 0);
-    cv::createTrackbar("up_diff", "image", &cardColor, 3, 0);
+	img0.copyTo(image);
 
-    cv::setMouseCallback("image", onMouse, 0);  
-    for (;;)
-    {
-        if (points.size() >= 4) {
+	cv::namedWindow("image", 0);
+	cv::createTrackbar("card_number", "image", &cardNumber, 12, 0);
+	cv::createTrackbar("color_card", "image", &cardColor, 3, 0);
 
-            std::cout << "4 points" << std::endl;
-            cv::line(image, points[0], points[1], roiColor, roiThickness);
-            cv::line(image, points[1], points[2], roiColor, roiThickness);
-            cv::line(image, points[2], points[3], roiColor, roiThickness);
-            cv::line(image, points[3], points[0], roiColor, roiThickness);
-            points.clear();
-        }
-        cv::imshow("image", image);
+	cv::setMouseCallback("image", onMouse, 0);
+	for (;;)
+	{
+		cv::imshow("image", image);
 
-        char c = (char)cv::waitKey(0);
+		char c = (char)cv::waitKey(0);
 
-        std::cout << c << std::endl;
-        if (c == 27)
-        {
-            std::cout << "Exiting ...\n";
-            break;
-        }
-        switch (c)
-        {
-        case 'r':
-            std::cout << "Original image is restored\n";
-            img0.copyTo(image);
-            break;
-        }
-    }
+		std::cout << c << std::endl;
+		if (c == 27)
+		{
+			std::cout << "Exiting ...\n";
+			break;
+		}
+		switch (c)
+		{
+		case 'r':
+			std::cout << "Original image is restored\n";
+			points.clear();
+			img0.copyTo(image);
+			break;
 
-    return 0;
+		case 'u':
+			std::cout << "Undo last point\n";
+			break;
+
+		case 'v':
+			std::cout << "Point & card values validate\n";
+			//TODO : Add datas
+			datas.push_back(new ImageData())
+			points.clear();
+			break;
+
+		case 'g':
+			//TODO : close & generate JSON
+			break;
+		}
+	}
+
+	return 0;
 }
 
 //int main(int argc, char** argv)
