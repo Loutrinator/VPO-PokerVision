@@ -1,10 +1,12 @@
 #pragma once
 #include "Card.h"
 #include "CardGroup.h"
+#include "Config.h"
+
 class PokerVision
 {
 public:
-	PokerVision(bool pip, int nbMatch, float angleMargin);
+	PokerVision(Config& config);
 	void setCardsDataset(const cv::Mat& cardsFile, int width, int height);
 	void findCards(Image& img, bool enableLogs);
 	void removeOverlapingImages(float minDist);

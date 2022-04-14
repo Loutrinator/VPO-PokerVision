@@ -12,11 +12,26 @@
 #include "PokerVision.h"
 
 #include "nlohmann/json.hpp"
+#include "Config.h"
 using json = nlohmann::json;
 
 
 int main(int argc, char** argv)
 {
+
+	std::string configName = "config1";
+	std::string photoName = "photo1";
+	if (argc == 2) {
+		photoName = argv[1];
+	}
+	else if (argc == 3) {
+
+		configName = argv[1];
+		photoName = argv[2];
+	}
+
+	Config config(configName);
+
 	std::string windowName = "card";
 	bool BnWInputs = true;
 
@@ -33,10 +48,7 @@ int main(int argc, char** argv)
 		system("pause");
 		return -1;
 	}
-	bool pipOnly = false;
-	int nbPointsToMatch = 10;
-	float angleTolerance = 5;
-	PokerVision p(pipOnly, nbPointsToMatch, angleTolerance);
+	PokerVision p(config);
 
 	Image testImage(testFile);
 	testImage.name = "Test image";
@@ -47,12 +59,12 @@ int main(int argc, char** argv)
 
 
 
-	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(50000, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
+	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(config.imageOrbMaxPointCount, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
 	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
 	p.findCards(testImage, true);
-	p.removeOverlapingImages(150);
+	p.removeOverlapingImages(config.overlapDistThreshold);
 	p.groupCards(300);
 	
 	bool showProcessedImages = true;

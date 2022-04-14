@@ -1,11 +1,11 @@
 #include "PokerVision.h"
 
-PokerVision::PokerVision(bool pip, int nbMatch, float angleMargin): pipOnly(pip), nbPointsToMatch(nbMatch)
+PokerVision::PokerVision(Config& config): pipOnly(config.pipOnly), nbPointsToMatch(config.nbPointsToMatch)
 {
-	cardOrb = cv::ORB::create(2000, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
+	cardOrb = cv::ORB::create(config.cardOrbMaxPointCount, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
 	bfm = cv::BFMatcher::create();
-	minAngle = 90 - angleMargin;
-	maxAngle = 90 + angleMargin;
+	minAngle = 90 - config.angleTolerance;
+	maxAngle = 90 + config.angleTolerance;
 }
 
 void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int height)
