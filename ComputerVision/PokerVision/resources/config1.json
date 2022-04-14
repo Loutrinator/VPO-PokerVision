@@ -1,0 +1,11 @@
+{
+    "enableLogs": false,
+    "showResult": false,
+    "pipOnly": false,
+    "nbPointsToMatch": 10,
+    "angleTolerance": 5,
+    "imageOrbMaxPointCount": 50000,
+    "cardOrbMaxPointCount": 2000,
+    "overlapDistThreshold": 150,
+    "groupingDistance": 300
+}

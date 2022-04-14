@@ -37,13 +37,13 @@ int main(int argc, char** argv)
 
 	// Chargement des images
 	cv::Mat cardsImage = cv::imread("resources/cartes.jpg");
-	if (cardsImage.empty()){
+	if (cardsImage.empty() && config.enableLogs){
 		std::cout << "Could not open or find the card image" << std::endl;
 		system("pause");
 		return -1;
 	}
 	cv::Mat testFile = cv::imread("resources/table-easy1.jpg");
-	if (testFile.empty()) {
+	if (testFile.empty() && config.enableLogs) {
 		std::cout << "Could not open or find the image to test" << std::endl;
 		system("pause");
 		return -1;
@@ -57,15 +57,13 @@ int main(int argc, char** argv)
 
 	//testImage.convertToHsv();
 
-
-
 	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(config.imageOrbMaxPointCount, 1.2, 8, 1, 0, 2,cv::ORB::FAST_SCORE);
 	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage,4,13);//setup de l'engine
-	p.findCards(testImage, true);
+	p.findCards(testImage);
 	p.removeOverlapingImages(config.overlapDistThreshold);
-	p.groupCards(300);
+	p.groupCards(config.groupingDistance);
 	
 	bool showProcessedImages = true;
 	bool showCards = true;
@@ -73,6 +71,7 @@ int main(int argc, char** argv)
 	bool showText = true;
 	bool showROI = true;
 	bool showBarrycenter = false;
+	if(config.showResult)
 	p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, showBarrycenter);
 
 	cv::waitKey(0);

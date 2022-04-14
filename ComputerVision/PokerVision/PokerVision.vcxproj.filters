@@ -32,6 +32,9 @@
     <ClCompile Include="CardGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes.jpg">
@@ -141,5 +144,13 @@
     <ClInclude Include="nlohmann\json.hpp">
       <Filter>Source Files\nlohmann</Filter>
     </ClInclude>
+    <ClInclude Include="Config.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\config1.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

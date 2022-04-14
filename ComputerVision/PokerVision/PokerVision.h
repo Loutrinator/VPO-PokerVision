@@ -8,7 +8,7 @@ class PokerVision
 public:
 	PokerVision(Config& config);
 	void setCardsDataset(const cv::Mat& cardsFile, int width, int height);
-	void findCards(Image& img, bool enableLogs);
+	void findCards(Image& img);
 	void removeOverlapingImages(float minDist);
 	void groupCards(float minDist);
 
@@ -26,9 +26,8 @@ public:
 	cv::Ptr<cv::ORB> cardOrb;
 	cv::Ptr<cv::BFMatcher> bfm;
 	float borderOffset = 7; //utilisé pour ignorer les bordures des cartes et ne scanner que leur contenu
-	bool pipOnly = false;
-	int nbPointsToMatch = 25;
 private:
+	Config& configuration;
 	int cardWidth = 0;
 	int cardHeight = 0;
 	float minAngle = 45;

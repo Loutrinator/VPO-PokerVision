@@ -1,11 +1,11 @@
 #include "PokerVision.h"
 
-PokerVision::PokerVision(Config& config): pipOnly(config.pipOnly), nbPointsToMatch(config.nbPointsToMatch)
+PokerVision::PokerVision(Config& config): configuration(config)
 {
-	cardOrb = cv::ORB::create(config.cardOrbMaxPointCount, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
+	cardOrb = cv::ORB::create(configuration.cardOrbMaxPointCount, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
 	bfm = cv::BFMatcher::create();
-	minAngle = 90 - config.angleTolerance;
-	maxAngle = 90 + config.angleTolerance;
+	minAngle = 90 - configuration.angleTolerance;
+	maxAngle = 90 + configuration.angleTolerance;
 }
 
 void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int height)
@@ -24,7 +24,7 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 			float maxX = (x + 1) * cardWidth - borderOffset;
 			float maxY = (y + 1) * cardHeight - borderOffset;
 			
-			if(pipOnly){
+			if(configuration.pipOnly){
 				float pipRoiCoeffx = 1.3f / 8.0f;
 				float pipRoiCoeffy = 3.3f / 11.0f;
 				maxX = minX + (maxX - minX) * pipRoiCoeffx;
@@ -45,7 +45,7 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 	}
 }
 
-void PokerVision::findCards(Image& img, bool enableLogs)
+void PokerVision::findCards(Image& img)
 {
 	int cardsFound = 0;
 	for (Card card : cards) {
@@ -53,15 +53,15 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 		if (bfm != nullptr) {
 			card.knnMatch(bfm, img, 0.75);
 		}
-		if (enableLogs) {
+		if (configuration.enableLogs) {
 			std::cout << std::endl << card.cardValue.ToShortString() << " : " << card.matchesGood.size() << " matches";
 		}
 
 		card.nbMatches = card.matchesGood.size();
 
-		if (card.nbMatches > nbPointsToMatch) {
+		if (card.nbMatches > configuration.nbPointsToMatch) {
 
-			if (enableLogs) {
+			if (configuration.enableLogs) {
 				std::cout << " -> VALID";
 			}
 			//Begin: Clipping
@@ -87,9 +87,9 @@ void PokerVision::findCards(Image& img, bool enableLogs)
 
 void PokerVision::removeOverlapingImages(float minDist)
 {
-	std::cout << std::endl << std::endl << "REMOVE OVERLAPPING" << std::endl;
+	if(configuration.enableLogs) std::cout << std::endl << std::endl << "REMOVE OVERLAPPING" << std::endl;
 	std::vector<std::vector<int>> groups = getGroupCardIdsByDistance(minDist);
-	std::cout << groups.size() << " groups found" << std::endl;
+	if (configuration.enableLogs) std::cout << groups.size() << " groups found" << std::endl;
 	
 	std::vector<Card> cleanedUpCards;
 	for (int i = 0; i < groups.size(); ++i) {
@@ -98,17 +98,17 @@ void PokerVision::removeOverlapingImages(float minDist)
 
 			int maxMatched = -15000;
 			int maxMatchedId = 0;
-			std::cout << std::endl << "multiple matches in one place !" << std::endl;
+			if (configuration.enableLogs) std::cout << std::endl << "multiple matches in one place !" << std::endl;
 			for (int j = 0; j < group.size(); ++j) {
 				int cardId = group[j];
-				std::cout << "Potential mismatch : " << foundCards[cardId].cardValue.ToString() << " : " << foundCards[cardId].nbMatches << std::endl;
+				if (configuration.enableLogs) std::cout << "Potential mismatch : " << foundCards[cardId].cardValue.ToString() << " : " << foundCards[cardId].nbMatches << std::endl;
 				if (maxMatched < foundCards[cardId].nbMatches) {
 					maxMatchedId = cardId;
 					maxMatched = foundCards[cardId].nbMatches;
 				}
 			}
 			Card chosenCard = foundCards[maxMatchedId];
-			std::cout << "Chosen card : " << chosenCard.cardValue.ToShortString() << " maxMatched : " << maxMatched << " card matches : " << chosenCard.nbMatches << std::endl;
+			if (configuration.enableLogs) std::cout << "Chosen card : " << chosenCard.cardValue.ToShortString() << " maxMatched : " << maxMatched << " card matches : " << chosenCard.nbMatches << std::endl;
 			cleanedUpCards.push_back(chosenCard);
 
 		}
@@ -134,7 +134,7 @@ void PokerVision::groupCards(float minDist)
 		}
 		float hue = (180 / groups.size()) * i;
 		cv::Scalar bgrColor = HSV2BGR(hue, 255, 255);
-		std::cout << "hue : " << hue << " color " << bgrColor[0] << ", " << bgrColor[1] << ", " << bgrColor[2] << std::endl;
+		if (configuration.enableLogs) std::cout << "hue : " << hue << " color " << bgrColor[0] << ", " << bgrColor[1] << ", " << bgrColor[2] << std::endl;
 		cg.setColors(bgrColor, cv::Scalar(255, 255, 0));
 		cardGroups.push_back(cg);
 	}
@@ -325,8 +325,8 @@ cv::Scalar PokerVision::BGR2HSV(float b, float g, float r)
 
 std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 {
-	std::cout << "GROUP CARDS" << std::endl;
-	std::cout << foundCards.size() << " cards found before grouping" << std::endl;
+	if (configuration.enableLogs) std::cout << "GROUP CARDS" << std::endl;
+	if (configuration.enableLogs) std::cout << foundCards.size() << " cards found before grouping" << std::endl;
 	std::vector<cv::Point2f> sums;
 	std::vector<std::vector<int>> groups;
 
@@ -356,7 +356,7 @@ std::vector<std::vector<int>> PokerVision::getGroupCardIdsByDistance(float dist)
 			sums.push_back(foundCards[i].center);
 		}
 	}
-	std::cout << "Cards are grouped in " << groups.size() << " groups." << std::endl;
+	if (configuration.enableLogs) std::cout << "Cards are grouped in " << groups.size() << " groups." << std::endl;
 	return groups;
 
 }

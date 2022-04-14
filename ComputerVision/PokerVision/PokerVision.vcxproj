@@ -150,6 +150,7 @@
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="CardGroup.cpp" />
     <ClCompile Include="CardValue.cpp" />
+    <ClCompile Include="Config.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="PokerVision.cpp" />
@@ -189,9 +190,13 @@
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardGroup.h" />
     <ClInclude Include="CardValue.h" />
+    <ClInclude Include="Config.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="PokerVision.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="resources\config1.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
