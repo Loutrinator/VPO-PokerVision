@@ -19,17 +19,15 @@
 
 #include <iostream>
 
-using namespace cv;
-using namespace std;
 
 static void help(char** argv)
 {
-    cout << "\nThis program demonstrated the floodFill() function\n"
+    std::cout << "\nThis program demonstrated the floodFill() function\n"
         "Call:\n"
         << argv[0]
-        << " [image_name -- Default: fruits.jpg]\n" << endl;
+        << " [image_name -- Default: fruits.jpg]\n" << std::endl;
 
-    cout << "Hot keys: \n"
+    std::cout << "Hot keys: \n"
         "\tESC - quit the program\n"
         "\tc - switch color/grayscale mode\n"
         "\tm - switch mask mode\n"
@@ -38,51 +36,28 @@ static void help(char** argv)
         "\tf - use gradient floodfill with fixed(absolute) range\n"
         "\tg - use gradient floodfill with floating(relative) range\n"
         "\t4 - use 4-connectivity mode\n"
-        "\t8 - use 8-connectivity mode\n" << endl;
+        "\t8 - use 8-connectivity mode\n" << std::endl;
 }
 
-Mat image0, image, gray, mask;
+cv::Scalar roiColor = cv::Scalar(255, 0, 0);
+cv::Mat image, img0;
 int ffillMode = 1;
-int loDiff = 20, upDiff = 20;
-int connectivity = 4;
-int isColor = true;
-bool useMask = false;
-int newMaskVal = 255;
+int cardNumber = 0, cardColor = 0;
+std::vector<cv::Point> points;
+int roiThickness = 4;
 
 static void onMouse(int event, int x, int y, int, void*)
 {
-    if (event != EVENT_LBUTTONDOWN)
+
+    if (event != cv::EVENT_LBUTTONDOWN)
         return;
 
-    Point seed = Point(x, y);
-    int lo = ffillMode == 0 ? 0 : loDiff;
-    int up = ffillMode == 0 ? 0 : upDiff;
-    int flags = connectivity + (newMaskVal << 8) +
-        (ffillMode == 1 ? FLOODFILL_FIXED_RANGE : 0);
-    int b = (unsigned)theRNG() & 255;
-    int g = (unsigned)theRNG() & 255;
-    int r = (unsigned)theRNG() & 255;
-    Rect ccomp;
-
-    Scalar newVal = isColor ? Scalar(b, g, r) : Scalar(r * 0.299 + g * 0.587 + b * 0.114);
-    Mat dst = isColor ? image : gray;
-    int area;
-
-    if (useMask)
-    {
-        threshold(mask, mask, 1, 128, THRESH_BINARY);
-        area = floodFill(dst, mask, seed, newVal, &ccomp, Scalar(lo, lo, lo),
-            Scalar(up, up, up), flags);
-        imshow("mask", mask);
-    }
-    else
-    {
-        area = floodFill(dst, seed, newVal, &ccomp, Scalar(lo, lo, lo),
-            Scalar(up, up, up), flags);
-    }
-
-    imshow("image", dst);
-    cout << area << " pixels were repainted\n";
+    cv::Point p = cv::Point(x, y);
+    //Ajouter les points lors du clic
+    //clic enter for show les carrées
+    points.push_back(p);
+    std::cout << "(x : " << p.x << "; y :"<< p.y << ";) pixels were repainted\n";
+    std::cout << points.size() << std::endl;
 }
 
 
@@ -96,93 +71,50 @@ int main(int argc, char** argv)
         parser.printMessage();
         return 0;
     }
-    string filename = parser.get<string>("@image");
-    image0 = imread(samples::findFile(filename), 1);
+    std::string filename = parser.get<std::string>("@image");
+    img0 = cv::imread(cv::samples::findFile(filename), 1);
 
-    if (image0.empty())
+    if (img0.empty())
     {
-        cout << "Image empty\n";
+       std::cout << "Image empty\n";
         parser.printMessage();
         return 0;
     }
     help(argv);
-    image0.copyTo(image);
-    cvtColor(image0, gray, COLOR_BGR2GRAY);
-    mask.create(image0.rows + 2, image0.cols + 2, CV_8UC1);
 
-    namedWindow("image", 0);
-    createTrackbar("lo_diff", "image", &loDiff, 255, 0);
-    createTrackbar("up_diff", "image", &upDiff, 255, 0);
+    img0.copyTo(image);
+   
+    cv::namedWindow("image", 0);
+    cv::createTrackbar("card_number", "image", &cardNumber, 12, 0);
+    cv::createTrackbar("up_diff", "image", &cardColor, 3, 0);
 
-    setMouseCallback("image", onMouse, 0);
-
+    cv::setMouseCallback("image", onMouse, 0);  
     for (;;)
     {
-        imshow("image", isColor ? image : gray);
+        if (points.size() >= 4) {
 
-        char c = (char)waitKey(0);
+            std::cout << "4 points" << std::endl;
+            cv::line(image, points[0], points[1], roiColor, roiThickness);
+            cv::line(image, points[1], points[2], roiColor, roiThickness);
+            cv::line(image, points[2], points[3], roiColor, roiThickness);
+            cv::line(image, points[3], points[0], roiColor, roiThickness);
+            points.clear();
+        }
+        cv::imshow("image", image);
+
+        char c = (char)cv::waitKey(0);
+
+        std::cout << c << std::endl;
         if (c == 27)
         {
-            cout << "Exiting ...\n";
+            std::cout << "Exiting ...\n";
             break;
         }
         switch (c)
         {
-        case 'c':
-            if (isColor)
-            {
-                cout << "Grayscale mode is set\n";
-                cvtColor(image0, gray, COLOR_BGR2GRAY);
-                mask = Scalar::all(0);
-                isColor = false;
-            }
-            else
-            {
-                cout << "Color mode is set\n";
-                image0.copyTo(image);
-                mask = Scalar::all(0);
-                isColor = true;
-            }
-            break;
-        case 'm':
-            if (useMask)
-            {
-                destroyWindow("mask");
-                useMask = false;
-            }
-            else
-            {
-                namedWindow("mask", 0);
-                mask = Scalar::all(0);
-                imshow("mask", mask);
-                useMask = true;
-            }
-            break;
         case 'r':
-            cout << "Original image is restored\n";
-            image0.copyTo(image);
-            cvtColor(image, gray, COLOR_BGR2GRAY);
-            mask = Scalar::all(0);
-            break;
-        case 's':
-            cout << "Simple floodfill mode is set\n";
-            ffillMode = 0;
-            break;
-        case 'f':
-            cout << "Fixed Range floodfill mode is set\n";
-            ffillMode = 1;
-            break;
-        case 'g':
-            cout << "Gradient (floating range) floodfill mode is set\n";
-            ffillMode = 2;
-            break;
-        case '4':
-            cout << "4-connectivity mode is set\n";
-            connectivity = 4;
-            break;
-        case '8':
-            cout << "8-connectivity mode is set\n";
-            connectivity = 8;
+            std::cout << "Original image is restored\n";
+            img0.copyTo(image);
             break;
         }
     }
