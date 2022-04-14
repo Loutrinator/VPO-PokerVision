@@ -190,6 +190,7 @@
     <ClInclude Include="CardGroup.h" />
     <ClInclude Include="CardValue.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="PokerVision.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
