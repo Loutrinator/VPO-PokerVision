@@ -30,7 +30,9 @@ int main()
 	std::wstring cmdArgslistSetChannel = std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(config);
 	cmdArgslistSetChannel += L" " + std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(imagePath);
 
-	HANDLE hProcess;
+	//Crash with opencv in PokerVision.exe
+
+	/*HANDLE hProcess;
 	HANDLE hThread;
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
@@ -57,7 +59,7 @@ int main()
 		CloseHandle(pi.hThread);
 		CloseHandle(pi.hProcess);
 	}
-	catch (std::exception e){}
+	catch (std::exception e){}*/
 
 	std::string outputName = "measures_config" +config + "_" + imagePath;
 	std::ifstream config_file("../output/" + outputName + ".json", std::ifstream::binary);
