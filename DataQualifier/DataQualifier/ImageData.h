@@ -1,23 +1,12 @@
 #pragma once
-#include "PointData.h"
+#include "CardsData.h"
 #include <opencv2/opencv.hpp>
+#include <vector>
 class ImageData
 {
 public:
+	std::vector<CardsData> cards;
 	ImageData() = default;
-	ImageData(int v,
-		int c,
-		int g,
-		cv::Point& tl,
-		cv::Point& tr,
-		cv::Point& bl,
-		cv::Point& br);
-	int value;
-	int color;
-	int group;
-	PointData topLeft;
-	PointData topRight;
-	PointData bottomLeft;
-	PointData bottomRight;
+	void addCard(int v, int c, int g, std::vector<cv::Point> ps);
 };
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -149,10 +149,13 @@
   <ItemGroup>
     <ClCompile Include="Card.cpp" />
     <ClCompile Include="CardGroup.cpp" />
+    <ClCompile Include="CardsData.cpp" />
     <ClCompile Include="CardValue.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="ImageData.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="DataQualifier.cpp" />
+    <ClCompile Include="PointData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="fruit.jpg" />
@@ -189,9 +192,12 @@
   <ItemGroup>
     <ClInclude Include="Card.h" />
     <ClInclude Include="CardGroup.h" />
+    <ClInclude Include="CardsData.h" />
     <ClInclude Include="CardValue.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="DataQualifier.h" />
+    <ClInclude Include="ImageData.h" />
+    <ClInclude Include="PointData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

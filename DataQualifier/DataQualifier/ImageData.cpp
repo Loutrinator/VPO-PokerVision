@@ -1,14 +1,6 @@
 #include "ImageData.h"
 
-ImageData::ImageData(int v, int c, int g, cv::Point& tl, cv::Point& tr, cv::Point& bl, cv::Point& br)
+void ImageData::addCard(const int v, const int c, const int g, std::vector<cv::Point> ps)
 {
-
-	value = v;
-	color = c;
-	group = g;
-
-	topLeft = PointData(tl.x, tl.y);
-	topRight = PointData(tr.x, tr.y);
-	bottomLeft = PointData(bl.x, bl.y);
-	bottomRight = PointData(br.x, br.y);
+	cards.push_back(CardsData(v, c, g, ps));
 }

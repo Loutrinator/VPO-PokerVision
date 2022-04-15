@@ -19,16 +19,17 @@
 
 #include <iostream>
 #include "ImageData.h"
+#include "CardsData.h"
 
 
 cv::Scalar roiColor = cv::Scalar(255, 0, 0);
 cv::Mat image, img0;
 int ffillMode = 1;
-int cardNumber = 0, cardColor = 0;
+int cardValue = 0, cardColor = 0;
 std::vector<cv::Point> points;
 std::vector<cv::Mat> undo_image;
 int roiThickness = 4;
-std::vector<ImageData> datas;
+ImageData datas;
 
 static void help(char** argv)
 {
@@ -50,7 +51,7 @@ static void help(char** argv)
 }
 
 
-void drawPoints() {
+static void drawPoints() {
 	if (points.size() == 2)
 		cv::line(image, points[0], points[1], roiColor, roiThickness);
 	if (points.size() == 3)
@@ -104,7 +105,7 @@ int main(int argc, char** argv)
 	img0.copyTo(image);
 
 	cv::namedWindow("image", 0);
-	cv::createTrackbar("card_number", "image", &cardNumber, 12, 0);
+	cv::createTrackbar("card_number", "image", &cardValue, 12, 0);
 	cv::createTrackbar("color_card", "image", &cardColor, 3, 0);
 
 	cv::setMouseCallback("image", onMouse, 0);
@@ -135,7 +136,7 @@ int main(int argc, char** argv)
 		case 'v':
 			std::cout << "Point & card values validate\n";
 			//TODO : Add datas
-			datas.push_back(new ImageData())
+			datas.addCard(cardValue,cardColor,NULL, points);
 			points.clear();
 			break;
 
