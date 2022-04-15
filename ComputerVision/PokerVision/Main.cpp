@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <string>
 #include <math.h>
+#include <chrono>
 
 #include "CardValue.h"
 #include "Card.h"
@@ -19,6 +20,8 @@ using json = nlohmann::json;
 
 int main(int argc, char** argv)
 {
+
+	clock_t findStart, overlapStart, groupStart, groupEnd;
 
 	std::string configName = "config1";
 	std::string photoName = "table-easy1";
@@ -64,10 +67,24 @@ int main(int argc, char** argv)
 	testImage.detectAndCompute(imageOrb);
 
 	p.setCardsDataset(cardsImage, 4, 13);//setup de l'engine
-	p.findCards(testImage);
-	p.removeOverlapingImages(config.overlapDistThreshold);
-	p.groupCards(config.groupingDistance);
 
+	findStart = clock();
+	p.findCards(testImage);
+	overlapStart = clock();
+
+	p.removeOverlapingImages(config.overlapDistThreshold);
+	groupStart = clock();
+	p.groupCards(config.groupingDistance);
+	groupEnd = clock();
+
+	//MEASURES
+	measures["findCardsTimespan"] = (float)(overlapStart - findStart)/1000;
+	measures["removeOverlapTimespan"] = (float)(groupStart - overlapStart)/1000;
+	measures["groupingTimespan"] = (float)(groupEnd - groupStart)/1000;
+	measures["totalTimespan"] = (float)(groupEnd - findStart)/1000;
+
+
+	//SHOW IMAGE
 	bool showProcessedImages = true;
 	bool showCards = true;
 	bool showPoints = false;

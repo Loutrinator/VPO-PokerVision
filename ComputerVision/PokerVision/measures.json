@@ -184,5 +184,9 @@
             "rank": 9,
             "suit": 3
         }
-    ]
+    ],
+    "findCardsTimespan": 10.86299991607666,
+    "groupingTimespan": 0.004999999888241291,
+    "removeOverlapTimespan": 0.007000000216066837,
+    "totalTimespan": 10.875
 }
