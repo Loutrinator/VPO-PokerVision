@@ -23,7 +23,7 @@ int main(int argc, char** argv)
 
 	clock_t findStart, overlapStart, groupStart, groupEnd;
 
-	std::string configName = "config1";
+	std::string configName = "config3";
 	std::string photoName = "table-easy1";
 	if (argc == 2) {
 		photoName = argv[1];
@@ -109,10 +109,10 @@ int main(int argc, char** argv)
 			cardJson["rank"] = card.cardValue.rank;//As 7 Roi etc
 
 			std::vector<json> points;
-			for (int k = 0; k < card.corners.size(); k++) {
+			for (int k = 0; k < card.gameCorners.size(); k++) {
 				json corner;
-				corner["x"] = card.corners[k].x;
-				corner["y"] = card.corners[k].y;
+				corner["x"] = card.gameCorners[k].x;
+				corner["y"] = card.gameCorners[k].y;
 				points.push_back(corner);
 			}
 			cardJson["points"] = points;

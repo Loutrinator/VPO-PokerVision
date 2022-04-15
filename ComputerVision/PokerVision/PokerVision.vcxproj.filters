@@ -152,5 +152,11 @@
     <None Include="resources\config1.json">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="resources\config2.json">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="resources\config3.json">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

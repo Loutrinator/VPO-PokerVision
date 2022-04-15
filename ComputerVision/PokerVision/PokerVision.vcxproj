@@ -197,6 +197,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="resources\config1.json" />
+    <None Include="resources\config2.json" />
+    <None Include="resources\config3.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
