@@ -287,6 +287,8 @@
     <ClInclude Include="Image.h" />
     <ClInclude Include="DataQualifier.h" />
     <ClInclude Include="ImageData.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
     <ClInclude Include="PointData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

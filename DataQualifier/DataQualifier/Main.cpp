@@ -24,37 +24,67 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
-
+#include "nlohmann/json.hpp"
+#include "Main.h"
+using json = nlohmann::json;
 namespace fs = std::filesystem;
 
 cv::Mat image, img0;
 int ffillMode = 1;
-int cardValue = 0, cardColor = 0;
+int rank = 0, suit = 0;
 std::vector<cv::Point> points;
 std::vector<cv::Mat> undo_image;
 int roiThickness = 4;
 ImageData datas;
+enum CardSuit {
+	Clubs = 0,
+	Spades = 1,
+	Diamonds = 2,
+	Hearts = 3
+};
 
-static void help(char** argv)
+enum CardRank {
+	Ace = 1,
+	Two = 2,
+	Three = 3,
+	Four = 4,
+	Five = 5,
+	Six = 6,
+	Seven = 7,
+	Eight = 8,
+	Nine = 9,
+	Ten = 10,
+	Jack = 11,
+	Queen = 12,
+	King = 13,
+};
+static std::string CardValueToString()
 {
-	std::cout << "\nThis program demonstrated the floodFill() function\n"
-		"Call:\n"
-		<< argv[0]
-		<< " [image_name -- Default: fruits.jpg]\n" << std::endl;
-
-	std::cout << "Hot keys: \n"
-		"\tESC - quit the program\n"
-		"\tc - switch color/grayscale mode\n"
-		"\tm - switch mask mode\n"
-		"\tr - restore the original image\n"
-		"\ts - use null-range floodfill\n"
-		"\tf - use gradient floodfill with fixed(absolute) range\n"
-		"\tg - use gradient floodfill with floating(relative) range\n"
-		"\t4 - use 4-connectivity mode\n"
-		"\t8 - use 8-connectivity mode\n" << std::endl;
+	std::string name;
+	switch (rank+1) {
+	case Two: name += "Two"; break;
+	case Three: name += "Three"; break;
+	case Four: name += "Four"; break;
+	case Five: name += "Five"; break;
+	case Six: name += "Six"; break;
+	case Seven: name += "Seven"; break;
+	case Eight: name += "Eight"; break;
+	case Nine: name += "Nine"; break;
+	case Ten: name += "Ten"; break;
+	case Jack: name += "Jack"; break;
+	case Queen: name += "Queen"; break;
+	case King: name += "King"; break;
+	case Ace: name += "Ace"; break;
+	}
+	name += " of ";
+	switch (suit) {
+	case Clubs: name += "Clubs"; break;
+	case Spades: name += "Spades"; break;
+	case Diamonds: name += "Diamonds"; break;
+	case Hearts: name += "Hearts"; break;
+	}
+	return name;
 }
-
-
 static void drawPoints(const std::vector<cv::Point> p, cv::Scalar roiColor = cv::Scalar(255, 0, 0)) {
 	if (p.size() >= 2)
 		cv::line(image, p[0], p[1], roiColor, roiThickness);
@@ -83,16 +113,20 @@ static void onMouse(int event, int x, int y, int, void*)
 	std::cout << "(x : " << p.x << "; y :" << p.y << ";) pixels were repainted\n";
 	std::cout << points.size() << std::endl;
 }
+static void onTrackbar(int newValue, void* object)
+{
 
+}
 
 int main(int argc, char** argv)
 {
+	json j;
 	std::string path = "resources";
 	bool changeImage = false;
 
 	cv::namedWindow("image", 0);
-	cv::createTrackbar("card_number", "image", &cardValue, 12, 0);
-	cv::createTrackbar("color_card", "image", &cardColor, 3, 0);
+	cv::createTrackbar("card_number", "image", &rank, 12, 0, onTrackbar);
+	cv::createTrackbar("color_card", "image", &suit, 3, 0, onTrackbar);
 
 	for (const auto& entry : fs::directory_iterator(path)) {
 		changeImage = false;
@@ -107,8 +141,20 @@ int main(int argc, char** argv)
 		cv::setMouseCallback("image", onMouse, 0);
 		while (!changeImage)
 		{
-			cv::imshow("image", image);
-
+			//Settings pour le texte
+			int font = cv::FONT_HERSHEY_SIMPLEX;
+			cv::Point2f textOffset(0, 15);
+			float fontScale = 2;
+			cv::Scalar fontColor(255, 255, 255);
+			int thickness = 3;
+			int lineType = 2;
+			cv::Point2f textPos(0, 0);
+			cv::Mat txtImg;
+			image.copyTo(txtImg);
+			cv::putText(txtImg, CardValueToString(), textPos, font, fontScale, fontColor, thickness, lineType);
+			
+			//cv::imshow("image", image);
+			cv::imshow("image", txtImg);
 			for (auto& ps : datas.cards)
 			{
 				drawPoints(ps.pointsRaw, cv::Scalar(128, 128, 128));
@@ -132,12 +178,13 @@ int main(int argc, char** argv)
 
 			case 'v': // Validate 4 points
 				std::cout << "Point & card values validate\n";
-				datas.addCard(cardValue, cardColor, NULL, points);
+				datas.addCard(rank, suit+1, NULL, points);
 				points.clear();
 				break;
 
 			case 'g': // Generate JSON
 				changeImage = true;
+				std::cout << datas.to_json().dump(4) << std::endl;
 				datas = ImageData();
 				//TODO : close & generate JSON
 				break;

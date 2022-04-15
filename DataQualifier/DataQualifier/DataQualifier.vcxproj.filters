@@ -150,5 +150,7 @@
     <ClInclude Include="CardsData.h" />
     <ClInclude Include="ImageData.h" />
     <ClInclude Include="PointData.h" />
+    <ClInclude Include="nlohmann\json.hpp" />
+    <ClInclude Include="Main.h" />
   </ItemGroup>
 </Project>
