@@ -29,6 +29,15 @@
     <ClCompile Include="CardGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CardsData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes.jpg">
@@ -138,5 +147,8 @@
     <ClInclude Include="CardGroup.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CardsData.h" />
+    <ClInclude Include="ImageData.h" />
+    <ClInclude Include="PointData.h" />
   </ItemGroup>
 </Project>

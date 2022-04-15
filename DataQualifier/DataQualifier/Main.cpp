@@ -21,8 +21,12 @@
 #include "ImageData.h"
 #include "CardsData.h"
 
+#include <string>
+#include <iostream>
+#include <filesystem>
 
-cv::Scalar roiColor = cv::Scalar(255, 0, 0);
+namespace fs = std::filesystem;
+
 cv::Mat image, img0;
 int ffillMode = 1;
 int cardValue = 0, cardColor = 0;
@@ -51,14 +55,14 @@ static void help(char** argv)
 }
 
 
-static void drawPoints() {
-	if (points.size() == 2)
-		cv::line(image, points[0], points[1], roiColor, roiThickness);
-	if (points.size() == 3)
-		cv::line(image, points[1], points[2], roiColor, roiThickness);
-	if (points.size() == 4) {
-		cv::line(image, points[2], points[3], roiColor, roiThickness);
-		cv::line(image, points[3], points[0], roiColor, roiThickness);
+static void drawPoints(const std::vector<cv::Point> p, cv::Scalar roiColor = cv::Scalar(255, 0, 0)) {
+	if (p.size() >= 2)
+		cv::line(image, p[0], p[1], roiColor, roiThickness);
+	if (p.size() >= 3)
+		cv::line(image, p[1], p[2], roiColor, roiThickness);
+	if (p.size() == 4) {
+		cv::line(image, p[2], p[3], roiColor, roiThickness);
+		cv::line(image, p[3], p[0], roiColor, roiThickness);
 	}
 
 	cv::imshow("image", image);
@@ -70,12 +74,12 @@ static void onMouse(int event, int x, int y, int, void*)
 		return;
 	if (points.size() >= 4)
 		return;
-		
+
 	cv::Point p = cv::Point(x, y);
 	//Ajouter les points lors du clic
 	//clic enter for show les carrées
 	points.push_back(p);
-	drawPoints();
+	drawPoints(points);
 	std::cout << "(x : " << p.x << "; y :" << p.y << ";) pixels were repainted\n";
 	std::cout << points.size() << std::endl;
 }
@@ -83,69 +87,70 @@ static void onMouse(int event, int x, int y, int, void*)
 
 int main(int argc, char** argv)
 {
-	cv::CommandLineParser parser(argc, argv,
-		"{help h | | show help message}{@image|fruits.jpg| input image}"
-	);
-	if (parser.has("help"))
-	{
-		parser.printMessage();
-		return 0;
-	}
-	std::string filename = parser.get<std::string>("@image");
-	img0 = cv::imread(cv::samples::findFile(filename), 1);
-
-	if (img0.empty())
-	{
-		std::cout << "Image empty\n";
-		parser.printMessage();
-		return 0;
-	}
-	help(argv);
-
-	img0.copyTo(image);
+	std::string path = "resources";
+	bool changeImage = false;
 
 	cv::namedWindow("image", 0);
 	cv::createTrackbar("card_number", "image", &cardValue, 12, 0);
 	cv::createTrackbar("color_card", "image", &cardColor, 3, 0);
 
-	cv::setMouseCallback("image", onMouse, 0);
-	for (;;)
-	{
-		cv::imshow("image", image);
+	for (const auto& entry : fs::directory_iterator(path)) {
+		changeImage = false;
+		std::cout << entry.path() << std::endl;
+		img0 = cv::imread(entry.path().u8string());
 
-		char c = (char)cv::waitKey(0);
-
-		std::cout << c << std::endl;
-		if (c == 27)
+		if (img0.empty())
 		{
-			std::cout << "Exiting ...\n";
 			break;
 		}
-		switch (c)
+		img0.copyTo(image);
+		cv::setMouseCallback("image", onMouse, 0);
+		while (!changeImage)
 		{
-		case 'r':
-			std::cout << "Original image is restored\n";
-			points.clear();
-			img0.copyTo(image);
-			break;
+			cv::imshow("image", image);
 
-		case 'u':
-			std::cout << "Undo last point\n";
-			break;
+			for (auto& ps : datas.cards)
+			{
+				drawPoints(ps.pointsRaw, cv::Scalar(128, 128, 128));
+			}
+			char c = (char)cv::waitKey(0);
 
-		case 'v':
-			std::cout << "Point & card values validate\n";
-			//TODO : Add datas
-			datas.addCard(cardValue,cardColor,NULL, points);
-			points.clear();
-			break;
+			std::cout << c << std::endl;
+			if (c == 27)
+			{
+				std::cout << "Exiting ...\n";
+				break;
+			}
+			switch (c)
+			{
+			case 'r': // Reload images
+				std::cout << "Original image is restored\n";
+				points.clear();
+				datas = ImageData();
+				img0.copyTo(image);
+				break;
 
-		case 'g':
-			//TODO : close & generate JSON
-			break;
+			case 'v': // Validate 4 points
+				std::cout << "Point & card values validate\n";
+				datas.addCard(cardValue, cardColor, NULL, points);
+				points.clear();
+				break;
+
+			case 'g': // Generate JSON
+				changeImage = true;
+				datas = ImageData();
+				//TODO : close & generate JSON
+				break;
+
+			case 's': // Skip
+				changeImage = true;
+				points.clear();
+				datas = ImageData();
+				std::cout << "Skip\n";
+				break;
+			}
 		}
 	}
-
 	return 0;
 }
 

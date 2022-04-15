@@ -14,6 +14,7 @@ public:
 	int value;
 	int color;
 	int group;
+	std::vector<cv::Point> pointsRaw;
 	std::vector<PointData> points;
 };
 
