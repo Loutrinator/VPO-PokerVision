@@ -7,11 +7,6 @@
 #include <string>
 #include <math.h>
 
-#include "CardValue.h"
-#include "Card.h"
-
-
-#include "DataQualifier.h"
 #include "opencv2/imgproc.hpp"
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/videoio.hpp"
@@ -24,12 +19,15 @@
 #include <string>
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 #include "nlohmann/json.hpp"
 #include "Main.h"
+#include <regex>
+
 using json = nlohmann::json;
 namespace fs = std::filesystem;
 
-cv::Mat image, img0;
+cv::Mat image, img0, cardValue;
 int ffillMode = 1;
 int rank = 0, suit = 0;
 std::vector<cv::Point> points;
@@ -61,7 +59,7 @@ enum CardRank {
 static std::string CardValueToString()
 {
 	std::string name;
-	switch (rank+1) {
+	switch (rank + 1) {
 	case Two: name += "Two"; break;
 	case Three: name += "Three"; break;
 	case Four: name += "Four"; break;
@@ -113,9 +111,41 @@ static void onMouse(int event, int x, int y, int, void*)
 	std::cout << "(x : " << p.x << "; y :" << p.y << ";) pixels were repainted\n";
 	std::cout << points.size() << std::endl;
 }
+
+static bool file_exists(const std::string& name) {
+	struct stat buffer;
+	return (stat(name.c_str(), &buffer) == 0);
+}
+
+static void writeJson(json j, std::string dest) {
+	std::string filename(dest);
+	std::ofstream outfile;
+
+	outfile.open(filename, std::ofstream::out | std::ofstream::trunc);
+
+	if (!outfile.is_open()) {
+		std::cerr << "failed to open " << filename << '\n';
+	}
+	else {
+		outfile.write(j.dump(4).c_str(), j.dump(4).size());
+		std::cerr << "Done Writing!" << std::endl;
+	}
+}
+
 static void onTrackbar(int newValue, void* object)
 {
+	cardValue = cv::Mat(64, 256, 0);
+	//Settings pour le texte
+	int font = cv::FONT_HERSHEY_SIMPLEX;
+	cv::Point2f textOffset(0, 15);
+	float fontScale = 1;
+	cv::Scalar fontColor(0, 255, 0);
+	int thickness = 3;
+	int lineType = 2;
+	cv::Point2f textPos(5, 30);
+	cv::putText(cardValue, CardValueToString(), textPos, font, fontScale, fontColor, thickness, lineType);
 
+	cv::imshow("card value", cardValue);
 }
 
 int main(int argc, char** argv)
@@ -125,76 +155,74 @@ int main(int argc, char** argv)
 	bool changeImage = false;
 
 	cv::namedWindow("image", 0);
-	cv::createTrackbar("card_number", "image", &rank, 12, 0, onTrackbar);
-	cv::createTrackbar("color_card", "image", &suit, 3, 0, onTrackbar);
+	cv::namedWindow("card value", 0);
+
+	cv::createTrackbar("card_number", "image", &rank, 12, onTrackbar);
+	cv::createTrackbar("color_card", "image", &suit, 3, onTrackbar);
+	onTrackbar(NULL, NULL);
+	cv::setMouseCallback("image", onMouse, 0);
 
 	for (const auto& entry : fs::directory_iterator(path)) {
 		changeImage = false;
 		std::cout << entry.path() << std::endl;
-		img0 = cv::imread(entry.path().u8string());
-
-		if (img0.empty())
-		{
-			break;
-		}
-		img0.copyTo(image);
-		cv::setMouseCallback("image", onMouse, 0);
-		while (!changeImage)
-		{
-			//Settings pour le texte
-			int font = cv::FONT_HERSHEY_SIMPLEX;
-			cv::Point2f textOffset(0, 15);
-			float fontScale = 2;
-			cv::Scalar fontColor(255, 255, 255);
-			int thickness = 3;
-			int lineType = 2;
-			cv::Point2f textPos(0, 0);
-			cv::Mat txtImg;
-			image.copyTo(txtImg);
-			cv::putText(txtImg, CardValueToString(), textPos, font, fontScale, fontColor, thickness, lineType);
-			
-			//cv::imshow("image", image);
-			cv::imshow("image", txtImg);
-			for (auto& ps : datas.cards)
+		if (entry.path().extension().u8string() == ".jpg") {
+			std::string destImage = entry.path().u8string();
+			std::string destJson = std::regex_replace(destImage, std::regex(entry.path().extension().u8string()), ".json");
+			if (!file_exists(destJson))
 			{
-				drawPoints(ps.pointsRaw, cv::Scalar(128, 128, 128));
-			}
-			char c = (char)cv::waitKey(0);
-
-			std::cout << c << std::endl;
-			if (c == 27)
-			{
-				std::cout << "Exiting ...\n";
-				break;
-			}
-			switch (c)
-			{
-			case 'r': // Reload images
-				std::cout << "Original image is restored\n";
-				points.clear();
-				datas = ImageData();
+				img0 = cv::imread(destImage);
+				if (img0.empty())
+				{
+					break;
+				}
 				img0.copyTo(image);
-				break;
+				while (!changeImage)
+				{
+					cv::imshow("image", image);
+					for (auto& ps : datas.cards)
+					{
+						drawPoints(ps.pointsRaw, cv::Scalar(128, 128, 128));
+					}
+					char c = (char)cv::waitKey(0);
 
-			case 'v': // Validate 4 points
-				std::cout << "Point & card values validate\n";
-				datas.addCard(rank, suit+1, NULL, points);
-				points.clear();
-				break;
+					std::cout << c << std::endl;
+					if (c == 27)
+					{
+						std::cout << "Exiting ...\n";
+						points.clear();
+						datas = ImageData();
+						break;
+					}
+					switch (c)
+					{
+					case 'r': // Reload images
+						std::cout << "Original image is restored\n";
+						points.clear();
+						datas = ImageData();
+						img0.copyTo(image);
+						break;
 
-			case 'g': // Generate JSON
-				changeImage = true;
-				std::cout << datas.to_json().dump(4) << std::endl;
-				datas = ImageData();
-				//TODO : close & generate JSON
-				break;
+					case 'v': // Validate 4 points
+						std::cout << "Point & card values validate\n";
+						datas.addCard(rank + 1, suit, NULL, points);
+						points.clear();
+						break;
 
-			case 's': // Skip
-				changeImage = true;
-				points.clear();
-				datas = ImageData();
-				std::cout << "Skip\n";
-				break;
+					case 'g': // Generate JSON
+						changeImage = true;
+						writeJson(datas.to_json(), destJson);
+						datas = ImageData();
+						//TODO : close & generate JSON
+						break;
+
+					case 's': // Skip
+						changeImage = true;
+						points.clear();
+						datas = ImageData();
+						std::cout << "Skip\n";
+						break;
+					}
+				}
 			}
 		}
 	}

@@ -147,14 +147,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Card.cpp" />
-    <ClCompile Include="CardGroup.cpp" />
     <ClCompile Include="CardsData.cpp" />
-    <ClCompile Include="CardValue.cpp" />
-    <ClCompile Include="Image.cpp" />
     <ClCompile Include="ImageData.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="DataQualifier.cpp" />
     <ClCompile Include="PointData.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -280,12 +275,7 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Card.h" />
-    <ClInclude Include="CardGroup.h" />
     <ClInclude Include="CardsData.h" />
-    <ClInclude Include="CardValue.h" />
-    <ClInclude Include="Image.h" />
-    <ClInclude Include="DataQualifier.h" />
     <ClInclude Include="ImageData.h" />
     <ClInclude Include="Main.h" />
     <ClInclude Include="nlohmann\json.hpp" />

@@ -11,22 +11,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Image.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Card.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CardValue.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DataQualifier.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CardGroup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CardsData.cpp">
@@ -132,21 +117,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Image.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Card.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CardValue.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DataQualifier.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CardGroup.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="CardsData.h" />
     <ClInclude Include="ImageData.h" />
     <ClInclude Include="PointData.h" />
