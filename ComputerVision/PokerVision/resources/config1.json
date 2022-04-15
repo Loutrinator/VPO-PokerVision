@@ -1,6 +1,6 @@
 {
     "enableLogs": true,
-    "showResult": true,
+    "showResult": false,
     "pipOnly": false,
     "correctWhiteBalance": true,
     "cardBrightnessContrast": true,

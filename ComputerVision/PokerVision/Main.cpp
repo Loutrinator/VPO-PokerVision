@@ -124,10 +124,10 @@ int main(int argc, char** argv)
 
 
 	std::string sMeasures = measures.dump(4);
-	std::string outputName = "measures.json";
+	std::string outputName = "measures_" + configName + "_" + photoName + ".json";
 	std::ofstream measureFile;
 
-	measureFile.open(outputName, std::ofstream::out | std::ofstream::trunc);
+	measureFile.open("../../output/" + outputName, std::ofstream::out | std::ofstream::trunc);
 	if (!measureFile.is_open()) {
 		std::cerr << "Unable to open " + outputName << std::endl;
 	}
