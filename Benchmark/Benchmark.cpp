@@ -39,46 +39,75 @@ int main()
 	ZeroMemory(&si, sizeof(si));
 	ZeroMemory(&pi, sizeof(pi));
 	BOOL bCreateProcess = NULL;
-	bCreateProcess = CreateProcess(
-		L"D:\\ESGI\\5A\\VPO-PokerVision\\ComputerVision\\x64\\Debug\\PokerVision.exe",
-		&cmdArgslistSetChannel[0],
-		NULL,
-		NULL,
-		FALSE,
-		0,
-		NULL,
-		NULL,
-		&si,
-		&pi);
+	try {
+		bCreateProcess = CreateProcess(
+			L"D:\\ESGI\\5A\\VPO-PokerVision\\ComputerVision\\x64\\Debug\\PokerVision.exe",
+			&cmdArgslistSetChannel[0],
+			NULL,
+			NULL,
+			FALSE,
+			0,
+			NULL,
+			NULL,
+			&si,
+			&pi);
 
-	WaitForSingleObject(pi.hProcess, INFINITE);
+		WaitForSingleObject(pi.hProcess, INFINITE);
 
-	CloseHandle(pi.hThread);
-	CloseHandle(pi.hProcess);
-	
-	std::string outputName = "measures_" + config + "_" + imagePath + ".json";
-	std::ifstream config_file("../output/" + outputName, std::ifstream::binary);
+		CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+	}
+	catch (std::exception e){}
+
+	std::string outputName = "measures_config" +config + "_" + imagePath;
+	std::ifstream config_file("../output/" + outputName + ".json", std::ifstream::binary);
 	
 	json userJson = json::parse(user_file);
 	json resultJson = json::parse(config_file);
 
+	bool foundCard = false;
 	int goodCardCount = 0;
-
-	for (int i = 0; i < userJson["cards"].size(); i++) {
-		for (int j = 0; j < resultJson["cards"].size(); j++) {
-			if (userJson["cards"][i]["rank"] == resultJson["cards"][j]["rank"]
-				&& userJson["cards"][i]["suit"] == resultJson["cards"][j]["suit"]
+	int badCardCount = 0;
+	for (int i = 0; i < resultJson["cards"].size(); i++) {
+		for (int j = 0; j < userJson["cards"].size(); j++) {
+			if (resultJson["cards"][i]["rank"] == userJson["cards"][j]["rank"]
+				&& resultJson["cards"][i]["suit"] == userJson["cards"][j]["suit"]
 				/* && userJson["cards"][i]["group"] == resultJson["cards"][j]["group"]*/) {
 				//json userPoints = userJson["cards"][i]["points"];
 				//json resultPoints = resultJson["cards"][j]["points"];
-
 				goodCardCount++;
+				foundCard = true;
 				break;
 			}
 		}
+		if(!foundCard)
+			badCardCount++;
+		foundCard = false;
 	}
 
-	std::cout << goodCardCount << std::endl;
+	json benchmark;
+	benchmark["Goodmatch"] = goodCardCount;
+	benchmark["totalcards"] = userJson["cards"].size();
+
+	benchmark["Badmatch"] = badCardCount;
+	benchmark["percentage"] = (float)goodCardCount / (float)userJson["cards"].size();
+	benchmark["executiontime"] = resultJson["totalTimespan"];
+	benchmark["cardsearchtime"] = resultJson["findCardsTimespan"];
+	benchmark["grouptime"] = resultJson["groupingTimespan"];
+	benchmark["overlaptime"] = resultJson["removeOverlapTimespan"];
+
+	std::string filename("../output/" + outputName+"_benchmarked.json");
+	std::ofstream outfile;
+
+	outfile.open(filename, std::ofstream::out | std::ofstream::trunc);
+
+	if (!outfile.is_open()) {
+		std::cerr << "failed to open " << filename << '\n';
+	}
+	else {
+		outfile.write(benchmark.dump(4).c_str(), benchmark.dump(4).size());
+		std::cerr << "Done Writing!" << std::endl;
+	}
 }
 
 
