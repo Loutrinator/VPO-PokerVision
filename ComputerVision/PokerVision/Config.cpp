@@ -15,6 +15,9 @@ Config::Config(std::string configName)
 	enableLogs = j["enableLogs"];
 	showResult = j["showResult"];
 	pipOnly = j["pipOnly"];
+	correctWhiteBalance = j["correctWhiteBalance"];
+	cardBrightnessContrast = j["cardBrightnessContrast"];
+
 	nbPointsToMatch = j["nbPointsToMatch"];
 	angleTolerance = j["angleTolerance"];
 	imageOrbMaxPointCount = j["imageOrbMaxPointCount"];

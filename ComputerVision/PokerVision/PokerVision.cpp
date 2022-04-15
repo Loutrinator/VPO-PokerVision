@@ -35,7 +35,8 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 			CardValue value(CardRank(14 - y), CardSuit(x));
 			Card card(tmp(cardROI),value);
 
-			brightnessContrast(card.mat, 1.3, -15);
+			if(configuration.cardBrightnessContrast)
+				brightnessContrast(card.mat, 1.3, -15);
 			//increaseReadability(card.mat);
 			card.detectAndCompute(cardOrb);
 
