@@ -29,11 +29,13 @@ namespace fs = std::filesystem;
 
 cv::Mat image, img0, cardValue;
 int ffillMode = 1;
-int rank = 0, suit = 0;
+int rank = 0, suit = 0, group = 0;
 std::vector<cv::Point> points;
 std::vector<cv::Mat> undo_image;
 int roiThickness = 4;
 ImageData datas;
+cv::Scalar roiColor = cv::Scalar(255, 0, 0);
+
 enum CardSuit {
 	Clubs = 0,
 	Spades = 1,
@@ -56,6 +58,7 @@ enum CardRank {
 	Queen = 12,
 	King = 13,
 };
+
 static std::string CardValueToString()
 {
 	std::string name;
@@ -83,7 +86,8 @@ static std::string CardValueToString()
 	}
 	return name;
 }
-static void drawPoints(const std::vector<cv::Point> p, cv::Scalar roiColor = cv::Scalar(255, 0, 0)) {
+
+static void drawPoints(const std::vector<cv::Point> p, cv::Scalar roiColor) {
 	if (p.size() >= 2)
 		cv::line(image, p[0], p[1], roiColor, roiThickness);
 	if (p.size() >= 3)
@@ -92,7 +96,6 @@ static void drawPoints(const std::vector<cv::Point> p, cv::Scalar roiColor = cv:
 		cv::line(image, p[2], p[3], roiColor, roiThickness);
 		cv::line(image, p[3], p[0], roiColor, roiThickness);
 	}
-
 	cv::imshow("image", image);
 }
 
@@ -107,7 +110,7 @@ static void onMouse(int event, int x, int y, int, void*)
 	//Ajouter les points lors du clic
 	//clic enter for show les carrées
 	points.push_back(p);
-	drawPoints(points);
+	drawPoints(points, roiColor);
 	std::cout << "(x : " << p.x << "; y :" << p.y << ";) pixels were repainted\n";
 	std::cout << points.size() << std::endl;
 }
@@ -132,7 +135,7 @@ static void writeJson(json j, std::string dest) {
 	}
 }
 
-static void onTrackbar(int newValue, void* object)
+static void onTrackbar_cardValue(int newValue, void* object)
 {
 	cardValue = cv::Mat(64, 256, 0);
 	//Settings pour le texte
@@ -145,8 +148,19 @@ static void onTrackbar(int newValue, void* object)
 	cv::Point2f textPos(5, 30);
 	cv::putText(cardValue, CardValueToString(), textPos, font, fontScale, fontColor, thickness, lineType);
 
-	cv::imshow("card value", cardValue);
+	cv::imshow("card_value", cardValue);
 }
+
+static void onTrackbar_group(int newValue, void* object)
+{
+	roiColor = cv::Scalar(
+		(double)std::rand() / RAND_MAX * 255,
+		(double)std::rand() / RAND_MAX * 255,
+		(double)std::rand() / RAND_MAX * 255
+	);
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -154,12 +168,15 @@ int main(int argc, char** argv)
 	std::string path = "resources";
 	bool changeImage = false;
 
-	cv::namedWindow("image", 0);
-	cv::namedWindow("card value", 0);
+	cardValue = cv::Mat(64, 256, 0);
 
-	cv::createTrackbar("card_number", "image", &rank, 12, onTrackbar);
-	cv::createTrackbar("color_card", "image", &suit, 3, onTrackbar);
-	onTrackbar(NULL, NULL);
+	cv::namedWindow("image", 0);
+	cv::namedWindow("card_value", 0);
+
+	cv::createTrackbar("card_number", "card_value", &rank, 12, onTrackbar_cardValue);
+	cv::createTrackbar("color_card", "card_value", &suit, 3, onTrackbar_cardValue);
+	cv::createTrackbar("group", "card_value", &group, 10, onTrackbar_group);
+	onTrackbar_cardValue(NULL, NULL);
 	cv::setMouseCallback("image", onMouse, 0);
 
 	for (const auto& entry : fs::directory_iterator(path)) {
@@ -181,7 +198,7 @@ int main(int argc, char** argv)
 					cv::imshow("image", image);
 					for (auto& ps : datas.cards)
 					{
-						drawPoints(ps.pointsRaw, cv::Scalar(128, 128, 128));
+						drawPoints(ps.pointsRaw, cv::Scalar(0, 255, 0));
 					}
 					char c = (char)cv::waitKey(0);
 
@@ -203,13 +220,14 @@ int main(int argc, char** argv)
 						break;
 
 					case 'v': // Validate 4 points
-						std::cout << "Point & card values validate\n";
-						datas.addCard(rank + 1, suit, NULL, points);
+						std::cout << "Point & card_values validate\n";
+						datas.addCard(rank + 1, suit, group, points);
 						points.clear();
 						break;
 
 					case 'g': // Generate JSON
 						changeImage = true;
+						datas.CalculateViewStraightness();
 						writeJson(datas.to_json(), destJson);
 						datas = ImageData();
 						//TODO : close & generate JSON
