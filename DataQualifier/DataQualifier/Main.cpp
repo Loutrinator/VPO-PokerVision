@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <math.h>
 
@@ -17,15 +18,11 @@
 #include "CardsData.h"
 
 #include <string>
-#include <iostream>
-#include <filesystem>
-#include <fstream>
 #include "nlohmann/json.hpp"
 #include "Main.h"
 #include <regex>
 
 using json = nlohmann::json;
-namespace fs = std::filesystem;
 
 cv::Mat image, img0, cardValue;
 int ffillMode = 1;
@@ -179,7 +176,7 @@ int main(int argc, char** argv)
 	onTrackbar_cardValue(NULL, NULL);
 	cv::setMouseCallback("image", onMouse, 0);
 
-	for (const auto& entry : fs::directory_iterator(path)) {
+	for (const auto& entry : std::filesystem::directory_iterator(path)) {
 		changeImage = false;
 		std::cout << entry.path() << std::endl;
 		if (entry.path().extension().u8string() == ".jpg") {
@@ -221,8 +218,10 @@ int main(int argc, char** argv)
 
 					case 'v': // Validate 4 points
 						std::cout << "Point & card_values validate\n";
-						datas.addCard(rank + 1, suit, group, points);
-						points.clear();
+						if (points.size() == 4) {
+							datas.addCard(rank + 1, suit, group, points);
+							points.clear();
+						}
 						break;
 
 					case 'g': // Generate JSON
