@@ -15,32 +15,38 @@ using json = nlohmann::json;
 
 float threshold = 400;
 
+bool sortPoints(json position1, json position2) { return (position1["x"] < position2["x"]); }
+
 /// <summary>
 /// Compare two list of points of cards
 /// </summary>
-/// <param name="point1">position of the first cards</param>
-/// <param name="point2">position of the second cards</param>
+/// <param name="points1">position of the first cards</param>
+/// <param name="points2">position of the second cards</param>
 /// <returns>true if the points are close enough, false otherwise</returns>
-bool comparePoints(json point1, json point2) {
+float comparePoints(json points1, json points2) {
 
 	//Stock the position values of each card in array
-	std::vector<float> card1 = { point1[0]["x"], point1[0]["y"], point1[1]["x"],point1[1]["y"],
-								point1[2]["x"], point1[2]["y"], point1[3]["x"], point1[3]["y"] };
-	std::vector<float> card2 = { point2[0]["x"], point2[0]["y"], point2[1]["x"],point2[1]["y"],
-								point2[2]["x"], point2[2]["y"], point2[3]["x"], point2[3]["y"] };
+	std::vector<json> card1 = { points1[0],points1[1],points1[2], points1[3] };
+	std::vector<json> card2 = { points2[0],points2[1],points2[2], points2[3]};
 
 	//sort the position values for simpler comparison
-	std::sort(card1.begin(), card1.end());
-	std::sort(card2.begin(), card2.end());
+	std::sort(card1.begin(), card1.end(), sortPoints);
+	std::sort(card2.begin(), card2.end(), sortPoints);
 
-
+	float sumdist = 0;
 	for (int i = 0; i < card1.size(); i++) {
 		//Check if the value are further than the value of threshold
-		if (std::abs(card1[i] - card2[i]) > threshold) {
+		float x1 = card1[i]["x"];
+		float x2 = card2[i]["x"];
+		float y1 = card1[i]["y"];
+		float y2 = card2[i]["y"];
+		sumdist+= sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+		/*if (std::abs(x1 - x2) > threshold || std::abs(y1 - y2) > threshold) {
 			return false;
-		}
+		}*/
 	}
-	return true;
+	sumdist /= 4;
+	return sumdist;
 }
 
 int main()
@@ -82,9 +88,7 @@ int main()
 					//Compare rank, suit and position of two cards 
 					if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
 						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]
-
-						&& comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"])
-						/* && userJson["cards"][i]["group"] == resultJson["cards"][j]["group"]*/) {
+						/*&& comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"])*/) {
 
 						//If cards are corresponding, increment good counter
 						goodCardCount++;
