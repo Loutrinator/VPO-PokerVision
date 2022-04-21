@@ -22,18 +22,18 @@ float threshold = 400;
 /// <param name="point2">position of the second cards</param>
 /// <returns>true if the points are close enough, false otherwise</returns>
 bool comparePoints(json point1, json point2) {
-	
+
 	//Stock the position values of each card in array
 	std::vector<float> card1 = { point1[0]["x"], point1[0]["y"], point1[1]["x"],point1[1]["y"],
-								point1[2]["x"], point1[2]["y"], point1[3]["x"], point1[3]["y"]};
+								point1[2]["x"], point1[2]["y"], point1[3]["x"], point1[3]["y"] };
 	std::vector<float> card2 = { point2[0]["x"], point2[0]["y"], point2[1]["x"],point2[1]["y"],
 								point2[2]["x"], point2[2]["y"], point2[3]["x"], point2[3]["y"] };
-	
+
 	//sort the position values for simpler comparison
 	std::sort(card1.begin(), card1.end());
 	std::sort(card2.begin(), card2.end());
 
-	
+
 	for (int i = 0; i < card1.size(); i++) {
 		//Check if the value are further than the value of threshold
 		if (std::abs(card1[i] - card2[i]) > threshold) {
@@ -47,19 +47,20 @@ int main()
 {
 	std::string path = "resources/";
 	std::string filename;
+	//Iteration on all configurations corresponding to selected image (Antoine files)
+	for (int i = 1; i < 4; i++) {
+		//Iteration on all files in resources (Ronan files)
+		for (const auto& entry : std::filesystem::directory_iterator(path)) {
+			if (entry.path().extension().u8string() == ".json") {
+				filename = entry.path().stem().u8string();
+			}
+			else {
+				continue;
+			}
 
-	//Iteration on all files in resources (Ronan files)
-	for (const auto& entry : std::filesystem::directory_iterator(path)) {
-		if (entry.path().extension().u8string() == ".json") {
-			filename = entry.path().stem().u8string();
-		}
-		else {
-			continue;
-		}
-		std::ifstream user_file("resources/" + filename + ".json", std::ifstream::binary);
 
-		//Iteration on all configurations corresponding to selected image (Antoine files)
-		for (int i = 1; i < 4; i++) {
+			std::ifstream user_file("resources/" + filename + ".json", std::ifstream::binary);
+
 			std::string outputName = "measures_config" + std::to_string(i) + "_" + filename;
 			std::ifstream config_file("../output/" + outputName + ".json", std::ifstream::binary);
 
@@ -81,10 +82,10 @@ int main()
 					//Compare rank, suit and position of two cards 
 					if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
 						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]
-						
+
 						&& comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"])
 						/* && userJson["cards"][i]["group"] == resultJson["cards"][j]["group"]*/) {
-						
+
 						//If cards are corresponding, increment good counter
 						goodCardCount++;
 						foundCard = true;
@@ -94,7 +95,7 @@ int main()
 				//If the card is not found the result is bad, increment bad counter
 				if (!foundCard)
 					badCardCount++;
-				
+
 				foundCard = false;
 			}
 
@@ -128,11 +129,11 @@ int main()
 				std::cerr << "Done Writing!" << std::endl;
 			}
 		}
-		
+
 	}
 
 
-	
+
 
 	//Crash with opencv in PokerVision.exe
 
