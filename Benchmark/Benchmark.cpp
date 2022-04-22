@@ -94,10 +94,13 @@ int main()
 					if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
 						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]){
 						//If cards are corresponding, increment good counter
-						distance = comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"]) < threshold;
-						goodCardCount++;
-						foundCard = true;
-						break;
+						distance = comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"]);
+						if (distance < threshold) {
+							goodCardCount++;
+							foundCard = true;
+							break;
+						}
+						
 					}
 				}
 				//If the card is not found the result is bad, increment bad counter
