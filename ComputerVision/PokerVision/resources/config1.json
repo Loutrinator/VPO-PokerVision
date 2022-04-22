@@ -5,9 +5,9 @@
     "correctWhiteBalance": true,
     "cardBrightnessContrast": true,
     "nbPointsToMatch": 40,
-    "angleTolerance": 5,
+    "angleTolerance": 90,
     "imageOrbMaxPointCount": 50000,
     "cardOrbMaxPointCount": 2000,
     "overlapDistThreshold": 50,
-    "groupingDistance": 600
+    "groupingDistance": 700
 }

@@ -20,121 +20,136 @@ using json = nlohmann::json;
 
 int main(int argc, char** argv)
 {
-
-	clock_t findStart, overlapStart, groupStart, groupEnd;
-
-	std::string configName = "config3";
-	std::string photoName = "table-easy1";
-	if (argc == 2) {
+	/*if (argc == 2) {
 		photoName = argv[1];
 	}
 	else if (argc == 3) {
 
 		configName = argv[1];
 		photoName = argv[2];
-	}
+	}*/
 
-	Config config(configName);
-	json measures;
+	clock_t findStart, overlapStart, groupStart, groupEnd;
 
-	std::string windowName = "card";
-	bool BnWInputs = true;
+	for (int configNumber = 1; configNumber <= 3; configNumber++) {
+		std::string configName = "config" + std::to_string(configNumber);
+		for (const auto& entry : std::filesystem::directory_iterator("resources/")) {
+			if (entry.path().extension().u8string() == ".jpg" && entry.path().u8string() != "resources/cartes.jpg") {
+				std::string photoPath = entry.path().u8string();// "table-easy1.jpg";
+				std::string photoName = entry.path().stem().u8string();// "table-easy1.jpg";
+				std::cout << photoName << std::endl;
+				Config config(configName);
+				json measures;
 
-	// Chargement des images
-	cv::Mat cardsImage = cv::imread("resources/cartes.jpg");
-	if (cardsImage.empty() && config.enableLogs) {
-		std::cout << "Could not open or find the card image" << std::endl;
-		system("pause");
-		return -1;
-	}
-	cv::Mat testFile = cv::imread("resources/" + photoName + ".jpg");
-	if (testFile.empty() && config.enableLogs) {
-		std::cout << "Could not open or find the image to test" << std::endl;
-		system("pause");
-		return -1;
-	}
-	PokerVision p(config);
+				std::string windowName = "card";
+				bool BnWInputs = true;
 
-	Image testImage(testFile);
-	testImage.name = "Test image";
+				// Chargement des images
+				cv::Mat cardsImage = cv::imread("resources/cartes.jpg");
+				if (cardsImage.empty() && config.enableLogs) {
+					std::cout << "Could not open or find the card image" << std::endl;
+					system("pause");
+					return -1;
+				}
+				cv::Mat testFile = cv::imread(photoPath);
+				if (testFile.empty() && config.enableLogs) {
+					std::cout << "Could not open or find the image to test" << std::endl;
+					system("pause");
+					return -1;
+				}
+				PokerVision p(config);
 
-	if (config.correctWhiteBalance)
-		p.divide(testImage.mat, cv::Vec3b(187, 218, 234));
+				Image testImage(testFile);
+				testImage.name = "Test image";
 
-	//testImage.convertToHsv();
+				if (config.correctWhiteBalance)
+					p.divide(testImage.mat, cv::Vec3b(187, 218, 234));
 
-	cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(config.imageOrbMaxPointCount, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
-	testImage.detectAndCompute(imageOrb);
+				//testImage.convertToHsv();
 
-	p.setCardsDataset(cardsImage, 4, 13);//setup de l'engine
+				cv::Ptr<cv::ORB> imageOrb = cv::ORB::create(config.imageOrbMaxPointCount, 1.2, 8, 1, 0, 2, cv::ORB::FAST_SCORE);
+				testImage.detectAndCompute(imageOrb);
 
-	findStart = clock();
-	p.findCards(testImage);
-	overlapStart = clock();
+				p.setCardsDataset(cardsImage, 4, 13);//setup de l'engine
 
-	p.removeOverlapingImages(config.overlapDistThreshold);
-	groupStart = clock();
-	p.groupCards(config.groupingDistance);
-	groupEnd = clock();
+				findStart = clock();
+				p.findCards(testImage);
+				overlapStart = clock();
 
-	//MEASURES
-	measures["findCardsTimespan"] = (float)(overlapStart - findStart)/1000;
-	measures["removeOverlapTimespan"] = (float)(groupStart - overlapStart)/1000;
-	measures["groupingTimespan"] = (float)(groupEnd - groupStart)/1000;
-	measures["totalTimespan"] = (float)(groupEnd - findStart)/1000;
+				if (p.foundCards.size() > 0) {
+					p.removeOverlapingImages(config.overlapDistThreshold);
+					groupStart = clock();
+					p.groupCards(config.groupingDistance);
+					measures["removeOverlapTimespan"] = (float)(groupStart - overlapStart) / 1000;
+					measures["groupingTimespan"] = (float)(groupEnd - groupStart) / 1000;
+				}
+				else {
+					measures["removeOverlapTimespan"] = 0;
+					measures["groupingTimespan"] = 0;
+				}
+				groupEnd = clock();
 
-
-	//SHOW IMAGE
-	bool showProcessedImages = true;
-	bool showCards = true;
-	bool showPoints = false;
-	bool showText = true;
-	bool showROI = true;
-	bool showBarrycenter = false;
-	if (config.showResult) {
-		p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, showBarrycenter);
-		cv::waitKey(0);
-		cv::destroyAllWindows();
-	}
+				//MEASURES
+				measures["findCardsTimespan"] = (float)(overlapStart - findStart) / 1000;
+				measures["totalTimespan"] = (float)(groupEnd - findStart) / 1000;
 
 
-	std::vector<json> cardsJsonList;
-	for (int i = 0; i < p.cardGroups.size(); i++) {
-		CardGroup& group = p.cardGroups[i];
-		for (int j = 0; j < group.cards.size(); j++) {
-			json cardJson;
-			cardJson["group"] = i;
-			Card& card = group.cards[j];
-			cardJson["suit"] = card.cardValue.suit;//coeur pique etc
-			cardJson["rank"] = card.cardValue.rank;//As 7 Roi etc
+				//SHOW IMAGE
+				bool showProcessedImages = true;
+				bool showCards = true;
+				bool showPoints = false;
+				bool showText = true;
+				bool showROI = true;
+				bool showBarrycenter = false;
+				if (config.showResult) {
+					p.showResult(testImage, showProcessedImages, showCards, showPoints, showText, showROI, showBarrycenter);
+					cv::waitKey(0);
+					cv::destroyAllWindows();
+				}
 
-			std::vector<json> points;
-			for (int k = 0; k < card.gameCorners.size(); k++) {
-				json corner;
-				corner["x"] = card.gameCorners[k].x;
-				corner["y"] = card.gameCorners[k].y;
-				points.push_back(corner);
+
+				std::vector<json> cardsJsonList;
+				for (int i = 0; i < p.cardGroups.size(); i++) {
+					CardGroup& group = p.cardGroups[i];
+					for (int j = 0; j < group.cards.size(); j++) {
+						json cardJson;
+						cardJson["group"] = i;
+						Card& card = group.cards[j];
+						cardJson["suit"] = card.cardValue.suit;//coeur pique etc
+						cardJson["rank"] = card.cardValue.rank;//As 7 Roi etc
+
+						std::vector<json> points;
+						for (int k = 0; k < card.gameCorners.size(); k++) {
+							json corner;
+							corner["x"] = card.gameCorners[k].x;
+							corner["y"] = card.gameCorners[k].y;
+							points.push_back(corner);
+						}
+						cardJson["points"] = points;
+						cardsJsonList.push_back(cardJson);
+					}
+				}
+				measures["cards"] = cardsJsonList;
+
+
+
+				std::string sMeasures = measures.dump(4);
+				std::string outputName = "measures_" + configName + "_" + photoName + ".json";
+				std::ofstream measureFile;
+
+				measureFile.open("../../output/" + outputName, std::ofstream::out | std::ofstream::trunc);
+				if (!measureFile.is_open()) {
+					std::cerr << "Unable to open " + outputName << std::endl;
+				}
+				else {
+					measureFile.write(sMeasures.data(), sMeasures.size());
+					std::cout << "Writing complete!" << std::endl;
+				}
+
 			}
-			cardJson["points"] = points;
-			cardsJsonList.push_back(cardJson);
 		}
 	}
-	measures["cards"] = cardsJsonList;
-
-
-
-	std::string sMeasures = measures.dump(4);
-	std::string outputName = "measures_" + configName + "_" + photoName + ".json";
-	std::ofstream measureFile;
-
-	measureFile.open("../../output/" + outputName, std::ofstream::out | std::ofstream::trunc);
-	if (!measureFile.is_open()) {
-		std::cerr << "Unable to open " + outputName << std::endl;
-	}
-	else {
-		measureFile.write(sMeasures.data(), sMeasures.size());
-		std::cout << "Writing complete!" << std::endl;
-	}
+	
 
 	return 0;
 }

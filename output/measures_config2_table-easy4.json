@@ -70,8 +70,8 @@
             "suit": 0
         }
     ],
-    "findCardsTimespan": 9.543000221252441,
-    "groupingTimespan": 0.0020000000949949026,
-    "removeOverlapTimespan": 0.004999999888241291,
-    "totalTimespan": 9.550000190734863
+    "findCardsTimespan": 9.246000289916992,
+    "groupingTimespan": -9.847999572753906,
+    "removeOverlapTimespan": 0.014000000432133675,
+    "totalTimespan": 9.267999649047852
 }

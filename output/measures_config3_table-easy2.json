@@ -139,8 +139,8 @@
             "suit": 3
         }
     ],
-    "findCardsTimespan": 3.4839999675750732,
-    "groupingTimespan": 0.007000000216066837,
-    "removeOverlapTimespan": 0.004999999888241291,
-    "totalTimespan": 3.496000051498413
+    "findCardsTimespan": 2.9719998836517334,
+    "groupingTimespan": -3.5989999771118164,
+    "removeOverlapTimespan": 0.012000000104308128,
+    "totalTimespan": 2.990000009536743
 }
