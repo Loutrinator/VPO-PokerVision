@@ -146,6 +146,7 @@
     <ClCompile Include="PointData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Benchmark.h" />
     <ClInclude Include="CardsData.h" />
     <ClInclude Include="ImageData.h" />
     <ClInclude Include="nlohmann\json.hpp" />

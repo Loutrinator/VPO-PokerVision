@@ -12,6 +12,8 @@
 #include <cmath>
 #include "nlohmann/json.hpp"
 #include "ImageData.h"
+#include <map>
+#include "Benchmark.h"
 using json = nlohmann::json;
 
 float threshold = 400;
@@ -49,6 +51,17 @@ float comparePoints(std::vector<PointData>& card1, std::vector<PointData>& card2
 bool sortByGroup(CardsData& a, CardsData& b) {
 	return (a.group < b.group);
 }
+
+void print_map(std::string_view comment, const std::map<int, int>& m)
+{
+	std::cout << comment;
+	// iterate using C++17 facilities
+	for (const auto& [key, value] : m) {
+		std::cout << '[' << key << "] = " << value << "; ";
+	}
+	std::cout << '\n';
+}
+
 int main()
 {
 	std::string benchmarkCsv;
@@ -91,21 +104,26 @@ int main()
 
 			json userJson = json::parse(user_file); // Good data
 			json resultJson = json::parse(config_file); // Algo data
-			ImageData userData;
-			ImageData resultData;
 
-			userData = (userJson);
+			ImageData userData(userJson);
 			std::sort(userData.cards.begin(), userData.cards.end(), sortByGroup);
+			std::map<int, std::vector<CardsData>> userGroup;
+			for (auto& d : userData.cards)
+			{
+				userGroup[d.group].push_back(d);
+				for (auto& d1 : userData.cards) {
+					if (!d.isSameCard(d1) && d.group == d1.group) {
+						d.groupedCards.push_back(d1);
+					}
+				}
+			}
 
-			resultData = (resultJson);
+			ImageData resultData(resultJson);
 			std::sort(resultData.cards.begin(), resultData.cards.end(), sortByGroup);
-
 
 			bool foundCard = false;
 			int goodCardCount = 0;
 			int goodGroupCount = 0;
-			std::vector<int> userGroup;
-			std::vector<int> resultGroup;
 			int badCardCount = 0;
 			float distance = 0;
 
@@ -120,6 +138,7 @@ int main()
 						if (distance < threshold) {
 							goodCardCount++;
 							foundCard = true;
+							resultCard.IsValid = true;
 							break;
 						}
 					}
@@ -130,8 +149,60 @@ int main()
 
 				foundCard = false;
 			}
+			//Group result after verif valid card
+			std::map<int, std::vector<CardsData>> resultGroup;
+			for (auto& d : resultData.cards)
+			{
+				if (d.IsValid)
+					resultGroup[d.group].push_back(d);
+				else
+					resultGroup[d.group];
+
+				for (auto& d1 : resultData.cards) {
+					if (!d.isSameCard(d1) && d.group == d1.group) {
+						d.groupedCards.push_back(d1);
+					}
+				}
+			}
+
+
+
+			int goodCardInGroup = 0;
+			//Check group content 
+			for (const auto& [rKey, rValues] : resultGroup) {
+				for (auto& rv : rValues) {
+					for (const auto& [uKey, uValues] : userGroup) {
+						for (auto& uv : uValues) {
+							if (rv.rank == uv.rank && rv.suit == uv.suit)
+								++goodCardInGroup;
+						}
+					}
+				}
+			}
+
 			//Creation of benchmark json
 			json benchmarkJson;
+
+			//Groups
+			benchmarkJson["UserNbGroup"] = userGroup.size();
+			float arvageCardByGroup = 0.f;
+			for (const auto& [key, value] : userGroup) {
+				arvageCardByGroup += value.size();
+			}
+			arvageCardByGroup /= userGroup.size();
+			benchmarkJson["UserArvageCardByGroup"] = arvageCardByGroup;
+
+			benchmarkJson["ResultNbGroup"] = resultGroup.size();
+			arvageCardByGroup = 0.f;
+			for (const auto& [key, value] : resultGroup) {
+				arvageCardByGroup += value.size();
+			}
+			arvageCardByGroup /= resultGroup.size();
+			benchmarkJson["ResultArvageCardByGroup"] = arvageCardByGroup;
+
+			benchmarkJson["goodCardInGroup"] = goodCardInGroup;
+
+
 			//Number of good cards detected
 			benchmarkJson["Goodmatch"] = goodCardCount;
 			benchmarkCsv += std::to_string(goodCardCount) + ";";
@@ -165,12 +236,12 @@ int main()
 			benchmarkJson["overlaptime"] = resultJson["removeOverlapTimespan"];
 			benchmarkCsv += std::to_string((float)resultJson["removeOverlapTimespan"]) + "\n";
 
-			if (!outfileJson.is_open() ) {
+			if (!outfileJson.is_open()) {
 				std::cerr << "failed to open " << filenameJson << '\n';
 			}
 			else {
 				outfileJson.write(benchmarkJson.dump(4).c_str(), benchmarkJson.dump(4).size());
-				
+
 				std::cerr << "Done Writing!" << std::endl;
 			}
 
