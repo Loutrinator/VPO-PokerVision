@@ -1,7 +1,7 @@
 {
     "cards": [
         {
-            "group": 1,
+            "group": 0,
             "points": [
                 {
                     "x": 1331,
@@ -24,7 +24,7 @@
             "suit": 0
         },
         {
-            "group": 2,
+            "group": 0,
             "points": [
                 {
                     "x": 1613,
@@ -277,7 +277,7 @@
             "suit": 0
         },
         {
-            "group": 1,
+            "group": 3,
             "points": [
                 {
                     "x": 1315,

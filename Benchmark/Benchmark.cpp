@@ -51,33 +51,43 @@ bool sortByGroup(CardsData& a, CardsData& b) {
 }
 int main()
 {
+	std::string benchmarkCsv;
 	std::string path = "resources/";
 	std::string filename;
+
 	//Iteration on all configurations corresponding to selected image (Antoine files)
 	for (int i = 1; i < 4; i++) {
-		std::string filename("../output/config" + std::to_string(i) + "_benchmarked.json");
-		std::ofstream outfile;
-		outfile.open(filename);
-
+		benchmarkCsv = ";Correct;Total;Wrong;Percentage;ROIDifference;Execution;Search;Groupe;Overlap\n";
+		std::string filenameJson("../output/config" + std::to_string(i) + "_benchmarked.json");
+		std::string filenameCsv("../output/config" + std::to_string(i) + "_benchmarked.csv");
+		std::ofstream outfileJson;
+		outfileJson.open(filenameJson);
+		std::ofstream outfileCsv;
+		outfileCsv.open(filenameCsv);
 		//Iteration on all files in resources (Ronan files)
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			if (entry.path().extension().u8string() == ".json") {
-				filename = entry.path().stem().u8string();
+				filenameJson = entry.path().stem().u8string();
 			}
 			else {
 				continue;
 			}
+			benchmarkCsv += filenameJson + ";";
 
+			std::ifstream user_file("resources/" + filenameJson + ".json", std::ifstream::binary);
 
-			std::ifstream user_file("resources/" + filename + ".json", std::ifstream::binary);
-
-			std::string outputName = "measures_config" + std::to_string(i) + "_" + filename;
+			std::string outputName = "measures_config" + std::to_string(i) + "_" + filenameJson;
 			std::ifstream config_file("../output/" + outputName + ".json", std::ifstream::binary);
 
 			if (user_file.fail()) {
 				std::cout << "User File does not exist :(";
-				return 0;
+				continue;
 			}
+			if (config_file.fail()) {
+				std::cout << "Config File does not exist :(";
+				continue;
+			}
+
 
 			json userJson = json::parse(user_file); // Good data
 			json resultJson = json::parse(config_file); // Algo data
@@ -121,41 +131,57 @@ int main()
 				foundCard = false;
 			}
 			//Creation of benchmark json
-			json benchmark;
+			json benchmarkJson;
 			//Number of good cards detected
-			benchmark["Goodmatch"] = goodCardCount;
+			benchmarkJson["Goodmatch"] = goodCardCount;
+			benchmarkCsv += std::to_string(goodCardCount) + ";";
 			//Number of cards in the base image
-			benchmark["totalcards"] = userData.cards.size();
+			benchmarkJson["totalcards"] = userData.cards.size();
+			benchmarkCsv += std::to_string(userData.cards.size()) + ";";
+
 			//Error card found
-			benchmark["Badmatch"] = badCardCount;
+			benchmarkJson["Badmatch"] = badCardCount;
+			benchmarkCsv += std::to_string(badCardCount) + ";";
+
 			//Percentage of cards found according to the total of cards in the image
-			benchmark["percentage"] = (float)goodCardCount / (float)userData.cards.size();
-			benchmark["ROImargin"] = distance;
+			benchmarkJson["percentage"] = (float)goodCardCount / (float)userData.cards.size();
+			benchmarkCsv += std::to_string((float)goodCardCount / (float)userData.cards.size()) + ";";
+
+			benchmarkJson["ROImargin"] = distance;
+			benchmarkCsv += std::to_string(distance) + ";";
 
 
 			//Antoine values
-			benchmark["executiontime"] = resultJson["totalTimespan"];
-			benchmark["cardsearchtime"] = resultJson["findCardsTimespan"];
-			benchmark["grouptime"] = resultJson["groupingTimespan"];
-			benchmark["overlaptime"] = resultJson["removeOverlapTimespan"];
+			benchmarkJson["executiontime"] = resultJson["totalTimespan"];
+			benchmarkCsv += std::to_string((float)resultJson["totalTimespan"]) + ";";
 
+			benchmarkJson["cardsearchtime"] = resultJson["findCardsTimespan"];
+			benchmarkCsv += std::to_string((float)resultJson["findCardsTimespan"]) + ";";
 
+			benchmarkJson["grouptime"] = resultJson["groupingTimespan"];
+			benchmarkCsv += std::to_string((float)resultJson["groupingTimespan"]) + ";";
 
-			//Antoine values
-			benchmark["executiontime"] = resultJson["totalTimespan"];
-			benchmark["cardsearchtime"] = resultJson["findCardsTimespan"];
-			benchmark["grouptime"] = resultJson["groupingTimespan"];
-			benchmark["overlaptime"] = resultJson["removeOverlapTimespan"];
+			benchmarkJson["overlaptime"] = resultJson["removeOverlapTimespan"];
+			benchmarkCsv += std::to_string((float)resultJson["removeOverlapTimespan"]) + "\n";
 
-			if (!outfile.is_open()) {
-				std::cerr << "failed to open " << filename << '\n';
+			if (!outfileJson.is_open() ) {
+				std::cerr << "failed to open " << filenameJson << '\n';
 			}
 			else {
-				outfile.write(benchmark.dump(4).c_str(), benchmark.dump(4).size());
+				outfileJson.write(benchmarkJson.dump(4).c_str(), benchmarkJson.dump(4).size());
+				
 				std::cerr << "Done Writing!" << std::endl;
 			}
-		}
 
+		}
+		if (!outfileCsv.is_open()) {
+			std::cerr << "failed to open " << filenameCsv << '\n';
+		}
+		else {
+			outfileCsv.write(benchmarkCsv.c_str(), benchmarkCsv.size());
+
+			std::cerr << "Done Writing!" << std::endl;
+		}
 	}
 
 
