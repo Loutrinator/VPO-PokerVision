@@ -70,7 +70,7 @@ int main()
 
 	//Iteration on all configurations corresponding to selected image (Antoine files)
 	for (int i = 1; i < 4; i++) {
-		benchmarkCsv = ";Correct;Total;Wrong;Percentage;ROIDifference;Straightness;Execution;Search;Groupe;Overlap\n";
+		benchmarkCsv = ";Correct;Total;Wrong;TotalResult;Percentage;ROIDifference;Straightness;Execution;Search;Groupe;Overlap\n";
 		std::string filenameJson("../output/config" + std::to_string(i) + "_benchmarked.json");
 		std::string filenameCsv("../output/config" + std::to_string(i) + "_benchmarked.csv");
 		std::ofstream outfileJson;
@@ -213,6 +213,8 @@ int main()
 			//Error card found
 			benchmarkJson["Badmatch"] = badCardCount;
 			benchmarkCsv += std::to_string(badCardCount) + ";";
+
+			benchmarkCsv += std::to_string(resultData.cards.size()) + ";";
 
 			//Percentage of cards found according to the total of cards in the image
 			benchmarkJson["percentage"] = (float)goodCardCount / (float)userData.cards.size();
