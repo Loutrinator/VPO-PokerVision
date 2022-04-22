@@ -18,6 +18,12 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 	for (int x = 0; x < width; ++x) {
 		for (int y = 0; y < height; ++y) {
 
+			int cardrank = 1;
+			if(y > 0)
+				cardrank = 14 - y;
+			CardValue value((CardRank)cardrank, (CardSuit)x);
+
+			std::cout << "Creating the " << value.ToString() << std::endl;
 			//on calcule la zone � lire pour r�cup�rer notre image
 			float minX = x * cardWidth + borderOffset;
 			float minY = y * cardHeight + borderOffset;
@@ -32,7 +38,6 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 			}
 
 			cv::Rect cardROI(cv::Point2f(minX, minY), cv::Point2f(maxX, maxY));
-			CardValue value(CardRank(14 - y), CardSuit(x));
 			Card card(tmp(cardROI),value);
 
 			if(configuration.cardBrightnessContrast)
@@ -40,7 +45,6 @@ void PokerVision::setCardsDataset(const cv::Mat& cardsFile, int width, int heigh
 			//increaseReadability(card.mat);
 			card.detectAndCompute(cardOrb);
 
-			cv::waitKey(0);
 			cards.push_back(card);
 		}
 	}
@@ -209,6 +213,116 @@ void PokerVision::brightnessContrast(cv::Mat& img, double contrast, int brightne
 		}
 	}
 	img = tmp;
+}
+
+void PokerVision::removeHueRange(cv::Mat& img, int minHue, int maxHue)
+{
+	//showImage(img, "beforeHSV", 500);
+	cv::cvtColor(img, img, cv::COLOR_BGR2HSV);
+	//showImage(img, "afterHSV", 500);
+	for (int y = 0; y < img.rows; y++) {
+		for (int x = 0; x < img.cols; x++) {
+			int hue = img.at<cv::Vec3b>(y, x)[0];
+			if (hue >= minHue && hue <= maxHue) {
+				img.at<cv::Vec3b>(y, x) = cv::Vec3b(0, 0, 0);
+			}
+			
+		}
+	}
+	cv::cvtColor(img, img, cv::COLOR_HSV2BGR);
+}
+
+void PokerVision::removeHueAndValueRange(cv::Mat& img, int minHue, int maxHue, int minValue, int maxValue)
+{
+	//showImage(img, "beforeHSV", 500);
+	cv::cvtColor(img, img, cv::COLOR_BGR2HSV);
+	//showImage(img, "afterHSV", 500);
+	for (int y = 0; y < img.rows; y++) {
+		for (int x = 0; x < img.cols; x++) {
+			int hue = img.at<cv::Vec3b>(y, x)[0];
+			int value = img.at<cv::Vec3b>(y, x)[2];
+			if (hue >= minHue && hue <= maxHue && value >= minValue && value <= maxValue) {
+				img.at<cv::Vec3b>(y, x) = cv::Vec3b(0, 0, 0);
+			}
+
+		}
+	}
+	cv::cvtColor(img, img, cv::COLOR_HSV2BGR);
+}
+
+void PokerVision::removeUndesiredLines(cv::Mat& img)
+{
+	cv::Mat lineImg = img.clone();
+	cv::Mat grayscaleImg;
+	cv::cvtColor(img, grayscaleImg,cv::COLOR_BGR2GRAY);
+	
+	cv::Mat edges;
+	cv::Canny(grayscaleImg, edges, 50, 200);
+	//cv::HoughLinesP(edges, lines, 1, CV_PI / 180, 200);
+	std::vector<cv::Vec2f> lines; // will hold the results of the detection
+	HoughLines(edges, lines, 1, CV_PI / 180, 100, 50,50);
+	if (lines.size() > 0) {
+		for (int i = 0; i < lines.size(); i++) {
+			// Draw the lines
+			float rho = lines[i][0];
+			float theta = lines[i][1];
+			cv::Point pt1, pt2;
+			double a = cos(theta), b = sin(theta);
+			double x0 = a * rho, y0 = b * rho;
+			pt1.x = cvRound(x0 + 1000 * (-b));
+			pt1.y = cvRound(y0 + 1000 * (a));
+			pt2.x = cvRound(x0 - 1000 * (-b));
+			pt2.y = cvRound(y0 - 1000 * (a));
+			line(lineImg, pt1, pt2, cv::Scalar(0, 255, 0), 2, cv::LINE_AA);
+		}
+	}
+	//showImage(lineImg, "HOOOOUUUGH", 800);
+
+	/*
+	vector<Vec4i> lines;
+  HoughLinesP(dst, lines, 1, CV_PI/180, 50, 50, 10 );
+  for( size_t i = 0; i < lines.size(); i++ )
+  {
+    Vec4i l = lines[i];
+    line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
+  }
+	
+	*/
+	/*
+for line in lines:
+    rho,theta = line[0]
+    a = np.cos(theta)
+    b = np.sin(theta)
+    x0 = a * rho
+    y0 = b * rho
+    # x1 stores the rounded off value of (r * cos(theta) - 1000 * sin(theta))
+    x1 = int(x0 + 1000 * (-b))
+    # y1 stores the rounded off value of (r * sin(theta)+ 1000 * cos(theta))
+    y1 = int(y0 + 1000 * (a))
+    # x2 stores the rounded off value of (r * cos(theta)+ 1000 * sin(theta))
+    x2 = int(x0 - 1000 * (-b))
+    # y2 stores the rounded off value of (r * sin(theta)- 1000 * cos(theta))
+    y2 = int(y0 - 1000 * (a))
+    cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+*/
+	//showImage(edges, "edges", 800);
+}
+
+void PokerVision::borderMasking(cv::Mat& img, int borderSize, int longerBorderCoeff)
+{
+
+	bool widthBiggerThanHeight = img.rows > img.cols;
+
+	int borders = borderSize;
+	int borderX = widthBiggerThanHeight ? borders * longerBorderCoeff : borders;
+	int borderY = widthBiggerThanHeight ? borders : borders * longerBorderCoeff;
+
+	cv::Mat mask = cv::Mat(img.rows, img.cols, CV_8UC3);
+	mask.setTo(cv::Scalar(0, 0, 0));
+	cv::rectangle(mask, cv::Rect(borderX, borderY, img.cols - borderX * 2, img.rows - borderY * 2), cv::Scalar(255, 255, 255), -1);
+
+	//showImage(mask, "mask", 800);
+	cv::bitwise_and(mask, img, img);
 }
 
 void PokerVision::showImage(cv::Mat& img, std::string name, int width)

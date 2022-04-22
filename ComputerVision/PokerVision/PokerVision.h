@@ -2,6 +2,7 @@
 #include "Card.h"
 #include "CardGroup.h"
 #include "Config.h"
+#include <opencv2/opencv.hpp>
 
 class PokerVision
 {
@@ -16,6 +17,10 @@ public:
 	
 	void divide(cv::Mat& img, cv::Vec3b rgb);
 	void static brightnessContrast(cv::Mat& img, double contrast, int brightness);
+	void removeHueRange(cv::Mat& img, int minHue, int maxHue);
+	void removeHueAndValueRange(cv::Mat& img, int minHue, int maxHue, int minValue, int maxValue);
+	void removeUndesiredLines(cv::Mat& img);
+	void borderMasking(cv::Mat& img, int borderSize, int longerBorderCoeff);
 
 	void static showImage(cv::Mat& img, std::string name, int width);
 	
