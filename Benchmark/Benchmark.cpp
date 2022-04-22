@@ -55,6 +55,10 @@ int main()
 	std::string filename;
 	//Iteration on all configurations corresponding to selected image (Antoine files)
 	for (int i = 1; i < 4; i++) {
+		std::string filename("../output/config" + std::to_string(i) + "_benchmarked.json");
+		std::ofstream outfile;
+		outfile.open(filename);
+
 		//Iteration on all files in resources (Ronan files)
 		for (const auto& entry : std::filesystem::directory_iterator(path)) {
 			if (entry.path().extension().u8string() == ".json") {
@@ -81,16 +85,16 @@ int main()
 			bool foundCard = false;
 			int goodCardCount = 0;
 			int badCardCount = 0;
+			float distance = 0;
 			//Iterate on cards of Antoine files
 			for (int x = 0; x < resultJson["cards"].size(); x++) {
 				//Iterate on cards of Ronan files
 				for (int y = 0; y < userJson["cards"].size(); y++) {
 					//Compare rank, suit and position of two cards 
 					if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
-						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]
-						/*&& comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"])*/) {
-
+						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]){
 						//If cards are corresponding, increment good counter
+						distance = comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"]) < threshold;
 						goodCardCount++;
 						foundCard = true;
 						break;
@@ -113,17 +117,14 @@ int main()
 			benchmark["Badmatch"] = badCardCount;
 			//Percentage of cards found according to the total of cards in the image
 			benchmark["percentage"] = (float)goodCardCount / (float)userJson["cards"].size();
+			benchmark["ROImargin"] = distance;
+
 
 			//Antoine values
 			benchmark["executiontime"] = resultJson["totalTimespan"];
 			benchmark["cardsearchtime"] = resultJson["findCardsTimespan"];
 			benchmark["grouptime"] = resultJson["groupingTimespan"];
 			benchmark["overlaptime"] = resultJson["removeOverlapTimespan"];
-
-			std::string filename("../output/" + outputName + "_benchmarked.json");
-			std::ofstream outfile;
-
-			outfile.open(filename, std::ofstream::out | std::ofstream::trunc);
 
 			if (!outfile.is_open()) {
 				std::cerr << "failed to open " << filename << '\n';
