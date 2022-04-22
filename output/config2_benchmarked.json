@@ -1,0 +1,211 @@
+{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 8.013243675231934,
+    "cardsearchtime": 7.769000053405762,
+    "executiontime": 7.815999984741211,
+    "grouptime": -8.39799976348877,
+    "overlaptime": 0.03700000047683716,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 9,
+    "Goodmatch": 4,
+    "ROImargin": 6.5043816566467285,
+    "cardsearchtime": 7.925000190734863,
+    "executiontime": 7.934000015258789,
+    "grouptime": -8.496999740600586,
+    "overlaptime": 0.004999999888241291,
+    "percentage": 0.3076923191547394,
+    "totalcards": 13
+}{
+    "Badmatch": 8,
+    "Goodmatch": 5,
+    "ROImargin": 199.3289337158203,
+    "cardsearchtime": 7.426000118255615,
+    "executiontime": 7.439000129699707,
+    "grouptime": -7.98199987411499,
+    "overlaptime": 0.007000000216066837,
+    "percentage": 0.38461539149284363,
+    "totalcards": 13
+}{
+    "Badmatch": 10,
+    "Goodmatch": 3,
+    "ROImargin": 6.7424492835998535,
+    "cardsearchtime": 9.246000289916992,
+    "executiontime": 9.267999649047852,
+    "grouptime": -9.847999572753906,
+    "overlaptime": 0.014000000432133675,
+    "percentage": 0.23076923191547394,
+    "totalcards": 13
+}{
+    "Badmatch": 7,
+    "Goodmatch": 6,
+    "ROImargin": 4.057413578033447,
+    "cardsearchtime": 7.499000072479248,
+    "executiontime": 7.515999794006348,
+    "grouptime": -8.081000328063965,
+    "overlaptime": 0.012000000104308128,
+    "percentage": 0.4615384638309479,
+    "totalcards": 13
+}{
+    "Badmatch": 7,
+    "Goodmatch": 6,
+    "ROImargin": 6.2751665115356445,
+    "cardsearchtime": 7.616000175476074,
+    "executiontime": 7.626999855041504,
+    "grouptime": -8.1850004196167,
+    "overlaptime": 0.007000000216066837,
+    "percentage": 0.4615384638309479,
+    "totalcards": 13
+}{
+    "Badmatch": 12,
+    "Goodmatch": 1,
+    "ROImargin": 5.235611438751221,
+    "cardsearchtime": 6.415999889373779,
+    "executiontime": 6.421999931335449,
+    "grouptime": -6.964000225067139,
+    "overlaptime": 0.004000000189989805,
+    "percentage": 0.07692307978868484,
+    "totalcards": 13
+}{
+    "Badmatch": 13,
+    "Goodmatch": 0,
+    "ROImargin": 0.0,
+    "cardsearchtime": 6.01800012588501,
+    "executiontime": 6.01800012588501,
+    "grouptime": 0,
+    "overlaptime": 0,
+    "percentage": 0.0,
+    "totalcards": 13
+}{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 6.694512367248535,
+    "cardsearchtime": 7.059000015258789,
+    "executiontime": 7.065999984741211,
+    "grouptime": -7.623000144958496,
+    "overlaptime": 0.003000000026077032,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 146.92344665527344,
+    "cardsearchtime": 7.604000091552734,
+    "executiontime": 7.619999885559082,
+    "grouptime": -8.182999610900879,
+    "overlaptime": 0.014000000432133675,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 13,
+    "Goodmatch": 0,
+    "ROImargin": 0.0,
+    "cardsearchtime": 7.349999904632568,
+    "executiontime": 7.349999904632568,
+    "grouptime": 0,
+    "overlaptime": 0,
+    "percentage": 0.0,
+    "totalcards": 13
+}{
+    "Badmatch": 13,
+    "Goodmatch": 0,
+    "ROImargin": 0.0,
+    "cardsearchtime": 6.910999774932861,
+    "executiontime": 6.910999774932861,
+    "grouptime": 0,
+    "overlaptime": 0,
+    "percentage": 0.0,
+    "totalcards": 13
+}{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 9.038317680358887,
+    "cardsearchtime": 7.7769999504089355,
+    "executiontime": 7.785999774932861,
+    "grouptime": -8.33899974822998,
+    "overlaptime": 0.004999999888241291,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 10,
+    "Goodmatch": 3,
+    "ROImargin": 9.976445198059082,
+    "cardsearchtime": 7.7829999923706055,
+    "executiontime": 7.811999797821045,
+    "grouptime": -8.347000122070313,
+    "overlaptime": 0.013000000268220901,
+    "percentage": 0.23076923191547394,
+    "totalcards": 13
+}{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 197.96453857421875,
+    "cardsearchtime": 6.484000205993652,
+    "executiontime": 6.492000102996826,
+    "grouptime": -7.057000160217285,
+    "overlaptime": 0.004000000189989805,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 10,
+    "Goodmatch": 2,
+    "ROImargin": 6.602545261383057,
+    "cardsearchtime": 7.113999843597412,
+    "executiontime": 7.135000228881836,
+    "grouptime": -7.677999973297119,
+    "overlaptime": 0.00800000037997961,
+    "percentage": 0.1666666716337204,
+    "totalcards": 12
+}{
+    "Badmatch": 11,
+    "Goodmatch": 2,
+    "ROImargin": 11.892626762390137,
+    "cardsearchtime": 7.888000011444092,
+    "executiontime": 7.896999835968018,
+    "grouptime": -8.444999694824219,
+    "overlaptime": 0.004999999888241291,
+    "percentage": 0.1538461595773697,
+    "totalcards": 13
+}{
+    "Badmatch": 9,
+    "Goodmatch": 4,
+    "ROImargin": 145.70452880859375,
+    "cardsearchtime": 7.048999786376953,
+    "executiontime": 7.059999942779541,
+    "grouptime": -7.605000019073486,
+    "overlaptime": 0.007000000216066837,
+    "percentage": 0.3076923191547394,
+    "totalcards": 13
+}{
+    "Badmatch": 10,
+    "Goodmatch": 3,
+    "ROImargin": 8.735692024230957,
+    "cardsearchtime": 7.770999908447266,
+    "executiontime": 7.789999961853027,
+    "grouptime": -8.345000267028809,
+    "overlaptime": 0.014999999664723873,
+    "percentage": 0.23076923191547394,
+    "totalcards": 13
+}{
+    "Badmatch": 6,
+    "Goodmatch": 7,
+    "ROImargin": 10.254271507263184,
+    "cardsearchtime": 6.953000068664551,
+    "executiontime": 6.966000080108643,
+    "grouptime": -7.508999824523926,
+    "overlaptime": 0.007000000216066837,
+    "percentage": 0.5384615659713745,
+    "totalcards": 13
+}{
+    "Badmatch": 10,
+    "Goodmatch": 3,
+    "ROImargin": 10.979188919067383,
+    "cardsearchtime": 7.4029998779296875,
+    "executiontime": 7.421999931335449,
+    "grouptime": -7.968999862670898,
+    "overlaptime": 0.00800000037997961,
+    "percentage": 0.23076923191547394,
+    "totalcards": 13
+}
