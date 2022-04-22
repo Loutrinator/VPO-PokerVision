@@ -21,10 +21,28 @@
     <ClCompile Include="Benchmark.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CardsData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PointData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="nlohmann\json.hpp">
       <Filter>Source Files\nlohmann</Filter>
+    </ClInclude>
+    <ClInclude Include="CardsData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PointData.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -115,12 +133,5 @@
     <Image Include="resources\test-4.png">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resources\table-easy1.json" />
-    <None Include="resources\table-easy2.json" />
-    <None Include="resources\table-easy3.json" />
-    <None Include="resources\table-easy4.json" />
-    <None Include="resources\table-easy5.json" />
   </ItemGroup>
 </Project>

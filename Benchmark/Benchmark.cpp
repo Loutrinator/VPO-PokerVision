@@ -11,6 +11,7 @@
 #include <locale>
 #include <cmath>
 #include "nlohmann/json.hpp"
+#include "ImageData.h"
 using json = nlohmann::json;
 
 float threshold = 400;
@@ -49,8 +50,40 @@ float comparePoints(json points1, json points2) {
 	return sumdist;
 }
 
+/// <summary>
+/// Compare two list of points of cards
+/// </summary>
+/// <param name="points1">position of the first cards</param>
+/// <param name="points2">position of the second cards</param>
+/// <returns>true if the points are close enough, false otherwise</returns>
+float comparePoints(const std::vector<PointData>& card1, const std::vector<PointData>& card2) {
+
+
+	//sort the position values for simpler comparison
+	std::sort(card1.begin(), card1.end(), sortPoints);
+	std::sort(card2.begin(), card2.end(), sortPoints);
+
+	float sumdist = 0;
+	for (int i = 0; i < card1.size(); i++) {
+		//Check if the value are further than the value of threshold
+		float x1 = card1[i].x;
+		float x2 = card2[i].x;
+		float y1 = card1[i].y;
+		float y2 = card2[i].y;
+		sumdist += sqrt(pow(x2 - x1, 2) + pow(y2 - y1, 2));
+		/*if (std::abs(x1 - x2) > threshold || std::abs(y1 - y2) > threshold) {
+			return false;
+		}*/
+	}
+	sumdist /= 4;
+	return sumdist;
+}
+bool sortByGroup(CardsData& a, CardsData& b) {
+	return (a.group < b.group);
+}
 int main()
 {
+	
 	std::string path = "resources/";
 	std::string filename;
 	//Iteration on all configurations corresponding to selected image (Antoine files)
@@ -79,48 +112,100 @@ int main()
 				return 0;
 			}
 
-			json userJson = json::parse(user_file);
-			json resultJson = json::parse(config_file);
+			json userJson = json::parse(user_file); // Good data
+			json resultJson = json::parse(config_file); // Algo data
+
+			ImageData userData(userJson);
+			std::sort(userData.cards.begin(), userData.cards.end(), sortByGroup);
+
+			ImageData resultData(resultJson);
+			std::sort(resultData.cards.begin(), resultData.cards.end(), sortByGroup);
+			
 
 			bool foundCard = false;
 			int goodCardCount = 0;
+			int goodGroupCount = 0;
+			std::vector<int> userGroup;
+			std::vector<int> resultGroup;
 			int badCardCount = 0;
 			float distance = 0;
-			//Iterate on cards of Antoine files
-			for (int x = 0; x < resultJson["cards"].size(); x++) {
-				//Iterate on cards of Ronan files
-				for (int y = 0; y < userJson["cards"].size(); y++) {
-					//Compare rank, suit and position of two cards 
-					if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
-						&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]){
-						//If cards are corresponding, increment good counter
-						distance = comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"]);
+
+			for (auto& userCard : userData.cards)
+			{
+				for (auto& resultCard : resultData.cards)
+				{
+					if (resultCard.rank == userCard.rank
+						&& resultCard.suit == userCard.suit) {
+
+						distance = comparePoints(resultCard.points, userCard.points);
 						if (distance < threshold) {
 							goodCardCount++;
 							foundCard = true;
 							break;
 						}
-						
 					}
 				}
-				//If the card is not found the result is bad, increment bad counter
+
 				if (!foundCard)
 					badCardCount++;
 
 				foundCard = false;
 			}
-
 			//Creation of benchmark json
 			json benchmark;
 			//Number of good cards detected
 			benchmark["Goodmatch"] = goodCardCount;
 			//Number of cards in the base image
-			benchmark["totalcards"] = userJson["cards"].size();
+			benchmark["totalcards"] = userData.cards.size();
 			//Error card found
 			benchmark["Badmatch"] = badCardCount;
 			//Percentage of cards found according to the total of cards in the image
-			benchmark["percentage"] = (float)goodCardCount / (float)userJson["cards"].size();
+			benchmark["percentage"] = (float)goodCardCount / (float)userData.cards.size();
 			benchmark["ROImargin"] = distance;
+
+
+			//Antoine values
+			benchmark["executiontime"] = resultJson["totalTimespan"];
+			benchmark["cardsearchtime"] = resultJson["findCardsTimespan"];
+			benchmark["grouptime"] = resultJson["groupingTimespan"];
+			benchmark["overlaptime"] = resultJson["removeOverlapTimespan"];
+
+			//Iterate on cards of Antoine files
+			//for (int x = 0; x < resultJson["cards"].size(); x++) {
+			//	//Iterate on cards of Ronan files
+			//	for (int y = 0; y < userJson["cards"].size(); y++) {
+			//		//Compare rank, suit and position of two cards 
+			//		if (resultJson["cards"][x]["rank"] == userJson["cards"][y]["rank"]
+			//			&& resultJson["cards"][x]["suit"] == userJson["cards"][y]["suit"]){
+
+			//			//If cards are corresponding, increment good counter
+			//			distance = comparePoints(resultJson["cards"][x]["points"], userJson["cards"][y]["points"]);
+			//			if (distance < threshold) {
+			//				goodCardCount++;
+			//				foundCard = true;
+			//				break;
+			//			}
+			//			
+			//		}
+			//	}
+			//	//If the card is not found the result is bad, increment bad counter
+			//	if (!foundCard)
+			//		badCardCount++;
+
+			//	foundCard = false;
+			//}
+
+			////Creation of benchmark json
+			//json benchmark;
+			////Number of good cards detected
+			//benchmark["Goodmatch"] = goodCardCount;
+			////Number of cards in the base image
+			//benchmark["totalcards"] = userJson["cards"].size();
+			////Error card found
+			//benchmark["Badmatch"] = badCardCount;
+			////Percentage of cards found according to the total of cards in the image
+			//benchmark["percentage"] = (float)goodCardCount / (float)userJson["cards"].size();
+			//benchmark["ROImargin"] = distance;
 
 
 			//Antoine values

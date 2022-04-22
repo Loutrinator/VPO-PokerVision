@@ -141,9 +141,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Benchmark.cpp" />
+    <ClCompile Include="CardsData.cpp" />
+    <ClCompile Include="ImageData.cpp" />
+    <ClCompile Include="PointData.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CardsData.h" />
+    <ClInclude Include="ImageData.h" />
     <ClInclude Include="nlohmann\json.hpp" />
+    <ClInclude Include="PointData.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="resources\cartes-badlight.png" />
@@ -175,13 +181,6 @@
     <Image Include="resources\test-2.png" />
     <Image Include="resources\test-3.png" />
     <Image Include="resources\test-4.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="resources\table-easy1.json" />
-    <None Include="resources\table-easy2.json" />
-    <None Include="resources\table-easy3.json" />
-    <None Include="resources\table-easy4.json" />
-    <None Include="resources\table-easy5.json" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
